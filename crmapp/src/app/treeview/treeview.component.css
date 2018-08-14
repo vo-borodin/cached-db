@@ -1,0 +1,14 @@
+.db-tree-view {
+  border: 1pt solid black;
+  overflow-y: scroll;
+  max-height: 80vh;
+  min-height: 80vh;
+  min-width: 32vw;
+}
+
+.db-tree-view ul,
+.db-tree-view li {
+  margin-top: 0;
+  margin-bottom: 0;
+  list-style-type: none;
+}

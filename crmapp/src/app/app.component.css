@@ -1,0 +1,9 @@
+.tree-view {
+  display: inline-block;
+}
+
+.move-btn-container {
+  display: inline-block;
+  vertical-align: middle;
+}
+
