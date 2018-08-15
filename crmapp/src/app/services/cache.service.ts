@@ -12,6 +12,6 @@ export class Cache extends IService {
   }
 
   getEmptyTree() {
-    this.dataChange.next(this.buildData("[]"));
+    this.dataChange.next(this.buildData([]));
   }
 }

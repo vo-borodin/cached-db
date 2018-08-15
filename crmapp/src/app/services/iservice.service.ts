@@ -15,26 +15,18 @@ export class IService {
     
   }
 
-  protected buildData(strData: string) {
-    // Parse the string to json object.
-    const dataArray = JSON.parse(strData);
-
-    // Build the tree nodes from Json object. The result is a list of `Node` with nested
-    //     node as children.
-    return this.buildTree(dataArray, -1);
-    //return this.httpClient.get(`${this.API_URL}/tree`);
+  protected buildData(data: Array<any>) {
+    return this.buildTree(data, null);
   }
 
-  protected buildTree(arr: Array<any>, parentIdx): Node[] {
-    return arr.map<any>((item, index) => {
-      return { item: item, index: index };
-    }).filter((elem) => {
-      return elem.item.parent === parentIdx;
-    }).map<Node>((elem) => {
+  protected buildTree(data: Array<any>, parentIdx): Node[] {
+    return data.filter((item) => {
+      return item.parent_id === parentIdx;
+    }).map<Node>((item) => {
       var node = new Node();
-      node.value = elem.item.value;
-      node.deleted = elem.item.deleted;
-      node.children = this.buildTree(arr, elem.index);
+      node.value = item.value;
+      node.deleted = item.is_deleted;
+      node.children = this.buildTree(data, item.id);
       return node;
     });
   }
