@@ -12,6 +12,12 @@ export class Cache extends IService {
   }
 
   getEmptyTree() {
-    this.dataChange.next(this.buildData([]));
+    this.httpClient.get(`${this.API_URL}/nodes`, {
+      params: {
+        id: ["1", "4"]
+      }
+    }).subscribe((data: Array<any>) => {
+      this.dataChange.next(this.buildData(data));
+    });
   }
 }

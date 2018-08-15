@@ -11,9 +11,7 @@ export class IService {
 
   public dataChange = new BehaviorSubject<Node[]>([]);
 
-  public constructor(protected httpClient: HttpClient) {
-    
-  }
+  public constructor(protected httpClient: HttpClient) { }
 
   protected buildData(data: Array<any>) {
     return this.buildTree(data, null);
