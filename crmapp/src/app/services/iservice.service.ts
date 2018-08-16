@@ -1,6 +1,6 @@
 import { Component, Injectable} from '@angular/core';
 import { HttpClient} from  '@angular/common/http';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { Node } from '../models/node.model';
 
 @Injectable()
@@ -51,4 +51,8 @@ export abstract class IService {
   }
   
   public abstract getTree();
+  
+  public resetNodes(): Observable<any> {
+    return this.httpClient.get(`${this.API_URL}/reset/`, { responseType: 'text' });
+  }
 }

@@ -11,7 +11,7 @@
     </td>
     <td colspan="2">
       <div class="move-btn-container">
-        <button><<<</button>
+        <button #selectButton><<<</button>
       </div>
     </td>
     <td colspan="9">
@@ -20,19 +20,19 @@
   </tr>
   <tr>
     <td>
-      <button>+</button>
+      <button #createButton>+</button>
     </td>
     <td>
-      <button>-</button>
+      <button #deleteButton>-</button>
     </td>
     <td colspan="3">
-      <button>a</button>
+      <button #editButton>a</button>
     </td>
     <td colspan="2">
-      <button>Apply</button>
+      <button #applyButton>Apply</button>
     </td>
     <td colspan="2">
-      <button>Reset</button>
+      <button #resetButton (click)="resetTree()">Reset</button>
     </td>
   </tr>
 </table>

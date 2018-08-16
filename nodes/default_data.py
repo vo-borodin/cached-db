@@ -3,13 +3,16 @@ DATA = {"6c3b34f6-423b-4414-ba27-497a231ef168": {"parentId": None, "value": "EMR
 
 def default_nodes(apps, schema_editor):
     Node = apps.get_model('nodes', 'Node')
+    reset_nodes(Node)
+
+def reset_nodes(cls):
     for k, v in DATA.items():
-        node = Node.objects.create(parent_id=None, is_deleted=False, value=v["value"])
+        node = cls.objects.create(parent_id=None, is_deleted=False, value=v["value"])
         node.save()
         v["pk"] = node.pk
     for k, v in DATA.items():
         if v["parentId"]:
-            node = Node.objects.get(pk=int(v["pk"]))
-            node.parent_id = Node.objects.get(pk=int(DATA[v["parentId"]]["pk"]))
+            node = cls.objects.get(pk=int(v["pk"]))
+            node.parent_id = cls.objects.get(pk=int(DATA[v["parentId"]]["pk"]))
             node.save()
 

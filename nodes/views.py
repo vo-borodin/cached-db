@@ -4,6 +4,7 @@ from .models import Node
 from .serializers import NodeSerializer
 from rest_framework.permissions import IsAdminUser
 from django.http import HttpResponse
+from nodes.default_data import reset_nodes
 # Create your views here.
 
 
@@ -18,3 +19,7 @@ class NodeListAPIView(generics.ListCreateAPIView):
         else:
             return Node.objects.all()
 
+def reset_view(request):
+    Node.objects.all().delete()
+    reset_nodes(Node)
+    return HttpResponse("Database is reset")

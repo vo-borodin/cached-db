@@ -38,6 +38,10 @@ export class DBTreeViewComponent extends TreeViewComponent {
   constructor(protected service: Database) {
     super(service);
   }
+  
+  resetTree() {
+    return this.service.resetNodes();
+  }
 }
 
 @Component({
