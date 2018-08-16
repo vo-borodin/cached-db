@@ -3,6 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { MatTreeModule } from '@angular/material/tree';
 import { MatGridListModule } from '@angular/material/grid-list';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { HttpModule } from '@angular/http'
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 
@@ -15,6 +16,7 @@ import { DBTreeViewComponent, CachTreeViewComponent } from './treeview/treeview.
     FormsModule,
     MatTreeModule,
     MatGridListModule,
+    MatProgressSpinnerModule,
     HttpModule,
     HttpClientModule,
   ],

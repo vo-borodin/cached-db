@@ -8,7 +8,8 @@ import { DBTreeViewComponent, CachTreeViewComponent } from './treeview/treeview.
   styleUrls: [ './app.component.css' ]
 })
 export class AppComponent implements OnInit  {
-  title = 'cached-db';
+  title = 'cached-db'; 
+  loading: boolean = false;
 
   constructor() { }
 
@@ -28,16 +29,31 @@ export class AppComponent implements OnInit  {
   private elApplyButton: ElementRef;
   @ViewChild('resetButton')
   private elResetButton: ElementRef;
+  @ViewChild('mainContent')
+  private elMainContent: ElementRef;
+  @ViewChild('loader')
+  private elLoader: ElementRef;
 
   ngOnInit() {
+    
+    
     this.cache.getTree();
     this.source.getTree();
   }
   
   resetTree() {
+    this.loading = true;
     this.source.resetTree().toPromise().then(() => {
+      this.loading = false;
       this.cache.getTree();
       this.source.getTree();
     });
+  }
+  
+  testLoader() {
+    this.loading = true;
+    setTimeout(() => {
+      this.loading = false;
+    }, 10000);
   }
 }

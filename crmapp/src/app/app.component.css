@@ -7,3 +7,13 @@
   vertical-align: middle;
 }
 
+.loader  {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  background-color: gray;
+  opacity: 0.4;
+  height: 100vh;
+  width: 100vw;
+  z-index: 1000;
+}
