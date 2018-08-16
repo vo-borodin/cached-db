@@ -4,7 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 import { Node } from '../models/node.model';
 
 @Injectable()
-export class IService {
+export abstract class IService {
   protected API_URL  =  'http://localhost:8000';
 
   public get data(): Node[] { return this.dataChange.value; }
@@ -50,5 +50,5 @@ export class IService {
     return nodes;
   }
   
-  protected abstract getTree();
+  public abstract getTree();
 }

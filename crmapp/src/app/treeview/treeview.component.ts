@@ -2,7 +2,7 @@ import { Component} from '@angular/core';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
 import { BehaviorSubject } from 'rxjs';
-import { Iservice } from '../services/iservice.service';
+import { IService } from '../services/iservice.service';
 import { Database } from '../services/database.service';
 import { Cache } from '../services/cache.service';
 import { Node } from '../models/node.model';
