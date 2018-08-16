@@ -12,7 +12,8 @@
         </td>
         <td colspan="2">
           <div class="move-btn-container">
-            <button #selectButton><<<</button>
+            <button #selectButton (click)="moveSelectedToCache()"
+                                  [disabled]="!source.getSelectedIds().length"><<<</button>
           </div>
         </td>
         <td colspan="9">
@@ -21,16 +22,20 @@
       </tr>
       <tr>
         <td>
-          <button #createButton>+</button>
+          <button #createButton (click)="appendCreate()"
+                                [disabled]="cache.getSelectedIds().length != 1">+</button>
         </td>
         <td>
-          <button #deleteButton>-</button>
+          <button #deleteButton (click)="appendDelete()"
+                                [disabled]="cache.getSelectedIds().length != 1">-</button>
         </td>
         <td colspan="3">
-          <button #editButton>a</button>
+          <button #updateButton (click)="appendUpdate()"
+                                [disabled]="cache.getSelectedIds().length != 1">a</button>
         </td>
         <td colspan="2">
-          <button #applyButton (click)="testLoader()">Apply</button>
+          <button #applyButton (click)="applyChanges()"
+                               [disabled]="!cache.service.applyable">Apply</button>
         </td>
         <td colspan="2">
           <button #resetButton (click)="resetTree()">Reset</button>
@@ -38,7 +43,9 @@
       </tr>
     </table>
   </div>
-  <div #loader [hidden]="!loading" class="loader">
-    <mat-progress-spinner color="black" value="0" mode="'undeterminate'"></mat-progress-spinner>
+  <div #loader [hidden]="!loading">
+    <div class="loader">
+      <mat-spinner></mat-spinner>
+    </div>
   </div>
 </div>

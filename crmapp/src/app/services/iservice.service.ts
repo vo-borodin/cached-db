@@ -42,6 +42,7 @@ export abstract class IService {
     for (var k in obj) {
       var item = obj[k];
       var node = new Node();
+      node.id = item.id;
       node.deleted = item.is_deleted;
       node.value = item.value;
       node.children = this.buildTree(item["children"]);

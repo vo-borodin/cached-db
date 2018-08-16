@@ -11,7 +11,7 @@ class TreeViewComponent {
   nestedTreeControl: NestedTreeControl<Node>;
   nestedDataSource: MatTreeNestedDataSource<Node>;
 
-  constructor(protected service: IService) {
+  constructor(public service: IService) {
     this.nestedTreeControl = new NestedTreeControl<Node>(this._getChildren);
     this.nestedDataSource = new MatTreeNestedDataSource();
 
@@ -21,12 +21,29 @@ class TreeViewComponent {
   }
 
   getTree () {
-    this.service.getTree();
+    return this.service.getTree();
   }
 
   hasNestedChild = (_: number, nodeData: Node) => !!nodeData.children.length;
 
   private _getChildren = (node: Node) => node.children;
+  
+  private _selectedIds: Array<any> = [];
+  
+  rowClick(node) {
+    if (!node.deleted) {
+      node.selected = !node.selected;
+      var index = this._selectedIds.indexOf(node.id);
+      if (index == -1)
+        this._selectedIds.push(node.id);
+      else
+        this._selectedIds.splice(index, 1);
+    }
+  }
+  
+  getSelectedIds(): Array<any> {
+    return this._selectedIds;
+  }
 }
 
 @Component({
@@ -35,7 +52,7 @@ class TreeViewComponent {
   styleUrls: ['treeview.component.css']
 })
 export class DBTreeViewComponent extends TreeViewComponent {
-  constructor(protected service: Database) {
+  constructor(public service: Database) {
     super(service);
   }
   
@@ -50,7 +67,7 @@ export class DBTreeViewComponent extends TreeViewComponent {
   styleUrls: ['treeview.component.css']
 })
 export class CachTreeViewComponent extends TreeViewComponent {
-  constructor(protected service: Cache) {
+  constructor(public service: Cache) {
     super(service);
   }
 }

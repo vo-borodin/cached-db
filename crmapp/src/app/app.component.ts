@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 
+import { OperationEnum } from './services/cache.service';
 import { DBTreeViewComponent, CachTreeViewComponent } from './treeview/treeview.component';
 
 @Component({
@@ -23,8 +24,8 @@ export class AppComponent implements OnInit  {
   private elCreateButton: ElementRef;
   @ViewChild('deleteButton')
   private elDeleteButton: ElementRef;
-  @ViewChild('editButton')
-  private elSelectButton: ElementRef;
+  @ViewChild('updateButton')
+  private elUpdateButton: ElementRef;
   @ViewChild('applyButton')
   private elApplyButton: ElementRef;
   @ViewChild('resetButton')
@@ -35,25 +36,54 @@ export class AppComponent implements OnInit  {
   private elLoader: ElementRef;
 
   ngOnInit() {
+    this.buildCacheTree();
+    this.buildSourceTree();
+  }
+  
+  moveSelectedToCache() {
+    this.cache.service.ids = this.source.getSelectedIds();
+    this.buildCacheTree();
+  }
+  
+  appendCreate() {
     
+  }
+  
+  appendDelete() {
+    /*this.cache.service.appendOperation(OperationEnum.Delete, {
+        id: this.cache.getSelectedIds()[0]
+    });*/
+  }
+  
+  appendUpdate() {
     
-    this.cache.getTree();
-    this.source.getTree();
+  }
+  
+  applyChanges() {
+    
   }
   
   resetTree() {
     this.loading = true;
     this.source.resetTree().toPromise().then(() => {
       this.loading = false;
-      this.cache.getTree();
-      this.source.getTree();
+      this.cache.service.ids = [];
+      this.buildCacheTree();
+      this.buildSourceTree();
     });
   }
   
-  testLoader() {
+  private buildCacheTree() {
     this.loading = true;
-    setTimeout(() => {
+    this.cache.getTree().then((resp) => {
       this.loading = false;
-    }, 10000);
+    });
+  }
+  
+  private buildSourceTree() {
+    this.loading = true;
+    this.source.getTree().then((resp) => {
+      this.loading = false;
+    });
   }
 }
