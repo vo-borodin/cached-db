@@ -2,6 +2,7 @@ import { Component} from '@angular/core';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
 import { BehaviorSubject } from 'rxjs';
+import { Iservice } from '../services/iservice.service';
 import { Database } from '../services/database.service';
 import { Cache } from '../services/cache.service';
 import { Node } from '../models/node.model';
@@ -10,9 +11,17 @@ class TreeViewComponent {
   nestedTreeControl: NestedTreeControl<Node>;
   nestedDataSource: MatTreeNestedDataSource<Node>;
 
-  constructor() {
+  constructor(protected service: IService) {
     this.nestedTreeControl = new NestedTreeControl<Node>(this._getChildren);
     this.nestedDataSource = new MatTreeNestedDataSource();
+
+    this.service.dataChange.subscribe(data => {
+      this.nestedDataSource.data = data;
+    });
+  }
+
+  getTree () {
+    this.service.getTree();
   }
 
   hasNestedChild = (_: number, nodeData: Node) => !!nodeData.children.length;
@@ -26,16 +35,8 @@ class TreeViewComponent {
   styleUrls: ['treeview.component.css']
 })
 export class DBTreeViewComponent extends TreeViewComponent {
-  constructor(private database: Database) {
-    super();
-
-    this.database.dataChange.subscribe(data => {
-      this.nestedDataSource.data = data;
-    });
-  }
-
-  getTree () {
-    this.database.getDefaultTree();
+  constructor(protected service: Database) {
+    super(service);
   }
 }
 
@@ -45,11 +46,7 @@ export class DBTreeViewComponent extends TreeViewComponent {
   styleUrls: ['treeview.component.css']
 })
 export class CachTreeViewComponent extends TreeViewComponent {
-  constructor(private cache: Cache) {
-    super();
-  }
-
-  getTree () {
-    this.cache.getEmptyTree();
+  constructor(protected service: Cache) {
+    super(service);
   }
 }

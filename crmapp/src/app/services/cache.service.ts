@@ -11,10 +11,10 @@ export class Cache extends IService {
     super(httpClient);
   }
 
-  getEmptyTree() {
+  getTree() {
     this.httpClient.get(`${this.API_URL}/nodes`, {
       params: {
-        id: ["1", "4"]
+        id: ["1", "11", "12", "50", "88"]
       }
     }).subscribe((data: Array<any>) => {
       this.dataChange.next(this.buildData(data));

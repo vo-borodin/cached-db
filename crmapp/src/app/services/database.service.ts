@@ -12,7 +12,7 @@ export class Database extends IService {
     super(httpClient);
   }
 
-  getDefaultTree() {
+  getTree() {
     this.httpClient.get(`${this.API_URL}/nodes`).subscribe((data: Array<any>) => {
         this.dataChange.next(this.buildData(data));
     });

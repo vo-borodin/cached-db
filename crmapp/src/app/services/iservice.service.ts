@@ -14,18 +14,41 @@ export class IService {
   public constructor(protected httpClient: HttpClient) { }
 
   protected buildData(data: Array<any>) {
-    return this.buildTree(data, null);
+    var items = {};
+    var toRemove = [];
+    data.forEach((item) => {
+      items[item.id] = item;
+    });
+    for (var k in items) {
+      var parentId = items[k]["parent_id"];
+      if (parentId in items) {
+        if ("children" in items[parentId])
+          items[parentId]["children"][k] = items[k];
+        else
+          items[parentId]["children"] = {k: items[k]};
+        toRemove.push(k)
+      }
+      if (!("children" in items[k]))
+          items[k]["children"] = {};
+    }
+    toRemove.forEach((id) => {
+      delete items[id];
+    })
+    return this.buildTree(items);
   }
 
-  protected buildTree(data: Array<any>, parentIdx): Node[] {
-    return data.filter((item) => {
-      return item.parent_id === parentIdx;
-    }).map<Node>((item) => {
+  protected buildTree(obj: Object): Node[] {
+    var nodes = [];
+    for (var k in obj) {
+      var item = obj[k];
       var node = new Node();
-      node.value = item.value;
       node.deleted = item.is_deleted;
-      node.children = this.buildTree(data, item.id);
-      return node;
-    });
+      node.value = item.value;
+      node.children = this.buildTree(item["children"]);
+      nodes.push(node);
+    }
+    return nodes;
   }
+  
+  protected abstract getTree();
 }
