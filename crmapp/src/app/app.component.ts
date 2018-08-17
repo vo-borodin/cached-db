@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 
-import { OperationEnum } from './services/cache.service';
+import { Create, Delete, Update } from './services/cache.service';
 import { DBTreeViewComponent, CachTreeViewComponent } from './treeview/treeview.component';
 
 @Component({
@@ -46,17 +46,16 @@ export class AppComponent implements OnInit  {
   }
   
   appendCreate() {
-    
+    // var c = new Create();
   }
   
   appendDelete() {
-    /*this.cache.service.appendOperation(OperationEnum.Delete, {
-        id: this.cache.getSelectedIds()[0]
-    });*/
+    var d = new Delete(this.cache.getSelectedIds()[0]);
+    this.cache.service.appendOperation(d);
   }
   
   appendUpdate() {
-    
+    // var u = new Update()
   }
   
   applyChanges() {
