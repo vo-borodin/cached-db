@@ -13,7 +13,7 @@
         <td colspan="2">
           <div class="move-btn-container">
             <button #selectButton (click)="moveSelectedToCache()"
-                                  [disabled]="!source.getSelectedIds().length"><<<</button>
+                                  [disabled]="!source.getSelectedNodes().length"><<<</button>
           </div>
         </td>
         <td colspan="9">
@@ -23,15 +23,15 @@
       <tr>
         <td>
           <button #createButton (click)="appendCreate()"
-                                [disabled]="cache.getSelectedIds().length != 1">+</button>
+                                [disabled]="cache.getSelectedNodes().length != 1">+</button>
         </td>
         <td>
           <button #deleteButton (click)="appendDelete()"
-                                [disabled]="cache.getSelectedIds().length != 1">-</button>
+                                [disabled]="cache.getSelectedNodes().length != 1">-</button>
         </td>
         <td colspan="3">
           <button #updateButton (click)="appendUpdate()"
-                                [disabled]="cache.getSelectedIds().length != 1">a</button>
+                                [disabled]="cache.getSelectedNodes().length != 1">a</button>
         </td>
         <td colspan="2">
           <button #applyButton (click)="applyChanges()"

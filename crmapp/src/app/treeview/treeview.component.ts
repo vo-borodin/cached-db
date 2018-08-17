@@ -28,21 +28,21 @@ class TreeViewComponent {
 
   private _getChildren = (node: Node) => node.children;
   
-  private _selectedIds: Array<any> = [];
+  private _selectedNodes: Node[] = [];
   
   rowClick(node) {
     if (!node.deleted) {
       node.selected = !node.selected;
-      var index = this._selectedIds.indexOf(node.id);
+      var index = this._selectedNodes.indexOf(node);
       if (index == -1)
-        this._selectedIds.push(node.id);
+        this._selectedNodes.push(node);
       else
-        this._selectedIds.splice(index, 1);
+        this._selectedNodes.splice(index, 1);
     }
   }
   
-  getSelectedIds(): Array<any> {
-    return this._selectedIds;
+  getSelectedNodes(): Node[] {
+    return this._selectedNodes;
   }
 }
 

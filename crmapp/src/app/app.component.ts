@@ -1,7 +1,41 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogConfig } from "@angular/material";
 
 import { Create, Delete, Update } from './services/cache.service';
 import { DBTreeViewComponent, CachTreeViewComponent } from './treeview/treeview.component';
+
+@Component({
+  template: `<div class="set-value-dialog">
+              <h2 mat-dialog-title>{{title}}</h2>
+              <input matInput [value]="value || ''"
+                              placeholder="Enter value..." />
+              <mat-dialog-actions>
+                <button class="mat-raised-button"(click)="close()">Close</button>
+                <button class="mat-raised-button mat-primary"(click)="save()">Save</button>
+              </mat-dialog-actions>
+            </div>`
+})
+export class SetValueDialog implements OnInit {
+  value: string;
+  title: string;
+  
+  constructor(private dialogRef: MatDialogRef<SetValueDialog>, @Inject(MAT_DIALOG_DATA) data) {
+    this.value = data.value;
+    this.title = data.title;
+  }
+  
+  ngOnInit() {
+    
+  }
+  
+  save() {
+    this.dialogRef.close(this.value);
+  }
+
+  close() {
+    this.dialogRef.close();
+  }
+}
 
 @Component({
   selector: 'my-app',
@@ -12,7 +46,7 @@ export class AppComponent implements OnInit  {
   title = 'cached-db'; 
   loading: boolean = false;
 
-  constructor() { }
+  constructor(private dialog: MatDialog) { }
 
   @ViewChild(CachTreeViewComponent)
   private cache: CachTreeViewComponent;
@@ -41,21 +75,38 @@ export class AppComponent implements OnInit  {
   }
   
   moveSelectedToCache() {
-    this.cache.service.ids = this.source.getSelectedIds();
+    this.cache.service.ids = this.source.getSelectedNodes().map<any>((node) => {
+      return node.id;
+    });
     this.buildCacheTree();
   }
   
   appendCreate() {
-    // var c = new Create();
+    this.openDialog("Add New Child of Node", "").then(data => {
+      if (data && data.value.trim()) {
+        var c = new Create(this.cache.getSelectedNodes()[0].id, data.value);
+        this.cache.service.appendOperation(c);
+      }
+    });
   }
   
   appendDelete() {
-    var d = new Delete(this.cache.getSelectedIds()[0]);
-    this.cache.service.appendOperation(d);
+    var selectedNode = this.cache.getSelectedNodes()[0];
+    if (confirm("Are you sure you want to delete the node '" + selectedNode.value + "'?")) {
+      var d = new Delete(this.cache.getSelectedNodes()[0].id);
+      this.cache.service.appendOperation(d);
+    }
   }
   
   appendUpdate() {
-    // var u = new Update()
+    var selectedNode = this.cache.getSelectedNodes()[0];
+    var oldValue = selectedNode.value;
+    this.openDialog("Edit Node", selectedNode.value).then(data => {
+      if (data && oldValue != data.value) {
+        var u = new Update(selectedNode.id, data.value);
+        this.cache.service.appendOperation(u);
+      }
+    });
   }
   
   applyChanges() {
@@ -70,6 +121,23 @@ export class AppComponent implements OnInit  {
       this.buildCacheTree();
       this.buildSourceTree();
     });
+  }
+  
+  private openDialog(title: string, value: string) {
+    const dialogConfig = new MatDialogConfig();
+    
+    dialogConfig.disableClose = false;
+    dialogConfig.autoFocus = true;
+    dialogConfig.hasBackdrop = true;
+    
+    dialogConfig.data = {
+      value: value,
+      title: title
+    };
+
+    const dialogRef = this.dialog.open(SetValueDialog, dialogConfig);
+    
+    return dialogRef.afterClosed().toPromise();
   }
   
   private buildCacheTree() {
