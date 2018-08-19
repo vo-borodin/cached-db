@@ -1,6 +1,6 @@
 import { IService } from './iservice.service';
 import { Operation } from './operations';
-import { HttpClient} from  '@angular/common/http';
+import { HttpClient, HttpHeaders } from  '@angular/common/http';
 import { Injectable} from '@angular/core';
 import { Subject } from 'rxjs';
 import { merge } from 'rxjs/observable/merge';
@@ -24,11 +24,11 @@ export class Cache extends IService {
           }
         });
       }),
-      map((data) => {
-        this.loading = false;
-        this._rawNodes = this._rawNodes.concat(data);
+      map((nodes) => {
+        this._rawNodes = this._rawNodes.concat(nodes);
       })
     ), this._changesSubject).subscribe(() => {
+      this.loading = false;
       var preApplied = this.preApplyChanges();
       return this.dataChange.next(this.buildData(preApplied));
     });
@@ -40,6 +40,17 @@ export class Cache extends IService {
   
   private _changes: Array<Operation> = [];
   private _changesSubject = new Subject();
+  
+  private preApplyChanges(): Array<any> {
+    return this._changes.reduce((accum, operation) => {
+      return operation.call(accum);
+    }, this._rawNodes.slice());
+  }
+  
+  private clearChanges() {
+    this._changes = [];
+    this._changesSubject.next();
+  }
   
   public clear() {
     this._rawNodes = [];
@@ -60,13 +71,26 @@ export class Cache extends IService {
     this._changesSubject.next(this._changes);
   }
   
-  get applyable() {
+  public get applyable() {
     return this._changes.length;
   }
   
-  preApplyChanges(): Array<any> {
-    return this._changes.reduce((accum, operation) => {
-      return operation.call(accum);
-    }, this._rawNodes.slice());
+  public applyChanges() {
+    this.loading = true;
+    this.httpClient.post<any>(`${this.API_URL}/apply`, {
+      params: {
+        changes: this._changes
+      }, {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/text'
+        })
+      }
+    ).subscribe((resp) => {
+      this.loading = false;
+      this.clear();
+      this.clearChanges();
+    }, (error) => {
+      this.loading = false;
+    });
   }
 }

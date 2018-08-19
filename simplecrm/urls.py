@@ -22,4 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     re_path(r'^nodes/(id=\d+)?$', nviews.NodeListAPIView.as_view(), name='node-list'),
     path(r'reset/', nviews.reset_view, name='reset-db'),
+    re_path(r'^apply', nviews.apply_view, name='apply-changes')
 ]

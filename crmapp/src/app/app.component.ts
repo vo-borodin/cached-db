@@ -52,23 +52,6 @@ export class AppComponent implements OnInit  {
   private cache: CachTreeViewComponent;
   @ViewChild(DBTreeViewComponent)
   private source: DBTreeViewComponent;
-  @ViewChild('selectButton')
-  private elSelectButton: ElementRef;
-  @ViewChild('createButton')
-  private elCreateButton: ElementRef;
-  @ViewChild('deleteButton')
-  private elDeleteButton: ElementRef;
-  @ViewChild('updateButton')
-  private elUpdateButton: ElementRef;
-  @ViewChild('applyButton')
-  private elApplyButton: ElementRef;
-  @ViewChild('resetButton')
-  private elResetButton: ElementRef;
-  @ViewChild('mainContent')
-  private elMainContent: ElementRef;
-  @ViewChild('loader')
-  private elLoader: ElementRef;
-
   ngOnInit() {
     this.source.service.readAll();
   }
@@ -96,6 +79,7 @@ export class AppComponent implements OnInit  {
       if (value && value.trim()) {
         var c = new Create(this.cache.getSelectedNode().id, value);
         this.cache.service.addOperation(c);
+        this.cache.deselect();
       }
     });
   }
@@ -105,6 +89,7 @@ export class AppComponent implements OnInit  {
     if (confirm("Are you sure you want to delete the node '" + selectedNode.value + "'?")) {
       var d = new Delete(selectedNode.id);
       this.cache.service.addOperation(d);
+      this.cache.deselect();
     }
   }
   
@@ -115,12 +100,13 @@ export class AppComponent implements OnInit  {
       if (value && oldValue != value) {
         var u = new Update(selectedNode.id, value);
         this.cache.service.addOperation(u);
+        this.cache.deselect();
       }
     });
   }
   
   applyChanges() {
-    
+    this.cache.service.applyChanges();
   }
   
   resetTree() {

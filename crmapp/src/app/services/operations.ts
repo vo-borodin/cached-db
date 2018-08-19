@@ -7,95 +7,125 @@ enum OperationEnum {
 }
 
 export abstract class Operation {
+  protected name: string;
+  
+  constructor() {
+    this.name = this.constructor.name;
+  }
+  
   public abstract call(nodes: Array<any>): Array<any>;
+  
+  protected traverse(item, callback: (i) => void) {
+    callback(item)
+    for (let k in item.children)
+      this.traverse(item.children[k], callback);
+  }
 }
 
 export class Create extends Operation {
-  /** _id: Guid
+  /** id: Guid
    *    -- the temporary identifier
    *    -- for building tree and to
    *    -- keep the relations between
    *    -- existing and new nodes
    */
-  private _id: any = null;
-  /** _parentId: Primary key
+  private id: any = null;
+  /** parentId: Primary key
    *    -- the parent of new node
    */
-  private _parentId: any;
-  /** _value: string
+  private parentId: any;
+  /** value: string
    *    -- the value of new node
    */
-  private _value: string;
+  private value: string;
   
   constructor(parentId: any, value: string) {
     super();
     
-    this._parentId = parentId;
-    this._value = value;
+    this.parentId = parentId;
+    this.value = value;
   }
   
   public call(nodes: Array<any>): Array<any> {
-    if (!this._id)
-      this._id = Guid.raw();
+    if (!this.id)
+      this.id = Guid.raw();
     var newRawNode = {
-      id: this._id,
+      id: this.id,
       is_deleted: false,
-      parent_id: this._parentId,
-      value: this._value
+      parent_id: this.parentId,
+      children: {},
+      value: this.value
     };
+    nodes.forEach((item) => {
+      this.traverse(item, (a) => {
+        if (a.id == this.parentId)
+          a.children[this.id] = newRawNode;
+      });
+    });
     nodes.push(newRawNode);
     return nodes;
   }
 }
 
 export class Delete extends Operation {
-  /** _id: Primary key
+  /** id: Primary key
    *    -- id of record to delete
    */
-  private _id: any;
+  private id: any;
+  /** ids: Array of primary keys
+   *    -- identifiers of deleted
+   *    -- items, collected for
+   *    -- push to server
+   */
+  private ids: Array<any> = [];
   
   constructor(id: any) {
     super();
     
-    this._id = id;
+    this.id = id;
   }
   
   public call(nodes: Array<any>): Array<any> {
-    var traverse = (id) => {
-      nodes.forEach((item) => {
-        if (item.id == id)
-          item.is_deleted = true;
-        if (item.parent_id == id)
-          traverse(item.id);
-      });
-    };
-    traverse(this._id);
+    var del = false;
+    this.ids = [];
+    nodes.forEach((item) => {
+      this.traverse(item, (a) => {
+        if (item.id == this.id)
+          del = true;
+        if (del) {
+          a.is_deleted = true;
+          this.ids.push(a.id);
+        }
+      })
+    });
     return nodes;
   }
 }
 
 export class Update extends Operation {
-  /** _id: Primary key
+  /** id: Primary key
    *    -- id of record to update
    */
-  private _id: any;
+  private id: any;
   
   /** value: string
    *    -- new value of the node
    */
-  private _value;
+  private value;
   
   constructor(id: any, value: string) {
     super();
     
-    this._id = id;
-    this._value = value;
+    this.id = id;
+    this.value = value;
   }
   
   public call(nodes: Array<any>): Array<any> {
     nodes.forEach((item) => {
-      if (item.id == this._id)
-        item.value = this._value;
+      this.traverse(item, (a) => {
+        if (a.id == this.id)
+          a.value = this.value;
+      });
     });
     return nodes;
   }
