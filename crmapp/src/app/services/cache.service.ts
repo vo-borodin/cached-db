@@ -67,6 +67,6 @@ export class Cache extends IService {
   preApplyChanges(): Array<any> {
     return this._changes.reduce((accum, operation) => {
       return operation.call(accum);
-    }, this._rawNodes);
+    }, this._rawNodes.slice());
   }
 }

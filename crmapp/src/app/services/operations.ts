@@ -1,3 +1,5 @@
+import { Guid } from "guid-typescript";
+
 enum OperationEnum {
   Create,
   Delete,
@@ -5,15 +7,20 @@ enum OperationEnum {
 }
 
 export abstract class Operation {
-  public abstract call(nodes: Node[]): Node[];
+  public abstract call(nodes: Array<any>): Array<any>;
 }
 
 export class Create extends Operation {
-  /** parent_id: Primary key | null
+  /** _id: Guid
+   *    -- the temporary identifier
+   *    -- for building tree
+   */
+  private _id: any = null;
+  /** _parentId: Primary key
    *    -- the parent of new node
    */
   private _parentId: any;
-  /** value: string
+  /** _value: string
    *    -- the value of new node
    */
   private _value: string;
@@ -27,12 +34,21 @@ export class Create extends Operation {
   
   public call(nodes: Array<any>): Array<any> {
     console.log("Create pre-applyed");
+    if (!this._id)
+      this._id = Guid.raw();
+    var newRawNode = {
+      id: this._id,
+      is_deleted: false,
+      parent_id: this._parentId,
+      value: this._value
+    };
+    nodes.push(newRawNode);
     return nodes;
   }
 }
 
 export class Delete extends Operation {
-  /** id: Primary key
+  /** _id: Primary key
    *    -- id of record to delete
    */
   private _id: any;
@@ -45,12 +61,21 @@ export class Delete extends Operation {
   
   public call(nodes: Array<any>): Array<any> {
     console.log("Delete pre-applyed");
+    var traverse = (id) => {
+      nodes.forEach((item) => {
+        if (item.id == id)
+          item.is_deleted = true;
+        if (item.parent_id == id)
+          traverse(item.id);
+      });
+    };
+    traverse(this._id);
     return nodes;
   }
 }
 
 export class Update extends Operation {
-  /** id: Primary key
+  /** _id: Primary key
    *    -- id of record to update
    */
   private _id: any;
@@ -69,6 +94,10 @@ export class Update extends Operation {
   
   public call(nodes: Array<any>): Array<any> {
     console.log("Update pre-applyed");
+    nodes.forEach((item) => {
+      if (item.id == this._id)
+        item.value = this._value;
+    });
     return nodes;
   }
 }
