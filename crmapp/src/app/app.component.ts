@@ -52,6 +52,7 @@ export class AppComponent implements OnInit  {
   private cache: CachTreeViewComponent;
   @ViewChild(DBTreeViewComponent)
   private source: DBTreeViewComponent;
+  
   ngOnInit() {
     this.source.service.readAll();
   }
@@ -106,7 +107,9 @@ export class AppComponent implements OnInit  {
   }
   
   applyChanges() {
-    this.cache.service.applyChanges();
+    this.cache.service.applyChanges().subscribe((resp) => {
+      this.source.service.readAll();
+    });
   }
   
   resetTree() {

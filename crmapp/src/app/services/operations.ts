@@ -57,10 +57,12 @@ export class Create extends Operation {
       value: this.value
     };
     nodes.forEach((item) => {
-      this.traverse(item, (a) => {
-        if (a.id == this.parentId)
-          a.children[this.id] = newRawNode;
-      });
+      this.traverse(item,
+        (a) => {
+          if (a.id == this.parentId)
+            a.children[this.id] = newRawNode;
+        }
+      );
     });
     nodes.push(newRawNode);
     return nodes;
@@ -88,16 +90,13 @@ export class Delete extends Operation {
   public call(nodes: Array<any>): Array<any> {
     var del = false;
     this.ids = [];
-    nodes.forEach((item) => {
-      this.traverse(item, (a) => {
-        if (item.id == this.id)
-          del = true;
-        if (del) {
-          a.is_deleted = true;
-          this.ids.push(a.id);
-        }
-      })
-    });
+    var item = nodes.filter((item) => { return item.id == this.id; })[0];
+    this.traverse(item,
+      (a) => {
+        a.is_deleted = true;
+        this.ids.push(a.id);
+      }
+    );
     return nodes;
   }
 }
@@ -111,7 +110,7 @@ export class Update extends Operation {
   /** value: string
    *    -- new value of the node
    */
-  private value;
+  private value: string;
   
   constructor(id: any, value: string) {
     super();
@@ -122,10 +121,12 @@ export class Update extends Operation {
   
   public call(nodes: Array<any>): Array<any> {
     nodes.forEach((item) => {
-      this.traverse(item, (a) => {
-        if (a.id == this.id)
-          a.value = this.value;
-      });
+      this.traverse(item,
+        (a) => {
+          if (a.id == this.id)
+            a.value = this.value;
+        }
+      );
     });
     return nodes;
   }

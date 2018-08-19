@@ -1,11 +1,12 @@
 import { IService } from './iservice.service';
 import { Operation } from './operations';
-import { HttpClient, HttpHeaders } from  '@angular/common/http';
+import { HttpClient } from  '@angular/common/http';
 import { Injectable} from '@angular/core';
-import { Subject } from 'rxjs';
+import { Subject, of } from 'rxjs';
 import { merge } from 'rxjs/observable/merge';
 import { switchMap } from 'rxjs/operators';
 import { map } from 'rxjs/operators/map';
+import { catchError } from 'rxjs/operators';
 import { Node } from '../models/node.model';
 
 @Injectable({
@@ -18,7 +19,7 @@ export class Cache extends IService {
     merge(this._addIdSubject.pipe(
       switchMap((id) => {
         this.loading = true;
-        return this.httpClient.get(`${this.API_URL}/nodes`, {
+        return this.httpClient.get(`${this.API_URL}/nodes/`, {
           params: {
             id: id.toString()
           }
@@ -31,6 +32,8 @@ export class Cache extends IService {
       this.loading = false;
       var preApplied = this.preApplyChanges();
       return this.dataChange.next(this.buildData(preApplied));
+    }, (error) => {
+      this.loading = false;
     });
   }
   
@@ -77,20 +80,19 @@ export class Cache extends IService {
   
   public applyChanges() {
     this.loading = true;
-    this.httpClient.post<any>(`${this.API_URL}/apply`, {
-      params: {
-        changes: this._changes
-      }, {
-        headers: new HttpHeaders({
-          'Content-Type': 'application/text'
-        })
+    return this.httpClient.post<any>(`${this.API_URL}/apply`, {
+        params: {
+          changes: this._changes
+        }
       }
-    ).subscribe((resp) => {
+    ).pipe(map((resp) => {
       this.loading = false;
       this.clear();
       this.clearChanges();
-    }, (error) => {
+      return resp;
+    }), catchError((err, _) => {
       this.loading = false;
-    });
+      return of({error: err});
+    }));
   }
 }
