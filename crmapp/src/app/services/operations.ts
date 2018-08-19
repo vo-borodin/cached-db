@@ -13,7 +13,9 @@ export abstract class Operation {
 export class Create extends Operation {
   /** _id: Guid
    *    -- the temporary identifier
-   *    -- for building tree
+   *    -- for building tree and to
+   *    -- keep the relations between
+   *    -- existing and new nodes
    */
   private _id: any = null;
   /** _parentId: Primary key
@@ -33,7 +35,6 @@ export class Create extends Operation {
   }
   
   public call(nodes: Array<any>): Array<any> {
-    console.log("Create pre-applyed");
     if (!this._id)
       this._id = Guid.raw();
     var newRawNode = {
@@ -60,7 +61,6 @@ export class Delete extends Operation {
   }
   
   public call(nodes: Array<any>): Array<any> {
-    console.log("Delete pre-applyed");
     var traverse = (id) => {
       nodes.forEach((item) => {
         if (item.id == id)
@@ -93,7 +93,6 @@ export class Update extends Operation {
   }
   
   public call(nodes: Array<any>): Array<any> {
-    console.log("Update pre-applyed");
     nodes.forEach((item) => {
       if (item.id == this._id)
         item.value = this._value;
