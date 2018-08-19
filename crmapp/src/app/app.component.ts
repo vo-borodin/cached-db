@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogConfig } from "@angular/material";
 
-import { Create, Delete, Update } from './services/cache.service';
+import { Create, Delete, Update } from './services/operations';
 import { DBTreeViewComponent, CachTreeViewComponent } from './treeview/treeview.component';
 
 @Component({
