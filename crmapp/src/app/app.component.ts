@@ -70,13 +70,15 @@ export class AppComponent implements OnInit  {
   private elLoader: ElementRef;
 
   ngOnInit() {
-    this.buildCacheTree();
-    this.buildSourceTree();
+    this.loading = true;
+    this.source.service.readAll().then((resp) => {
+      this.loading = false;
+    });
   }
   
   isMoveDisabled() {
     var node = this.source.getSelectedNode();
-    return !node || this.cache.service.ids.indexOf(node.id) != -1;
+    return !node || this.cache.service.contains(node.id);
   }
   
   isOperDisabled() {
@@ -88,8 +90,10 @@ export class AppComponent implements OnInit  {
   }
   
   moveSelectedToCache() {
-    this.cache.service.addId(this.source.getSelectedNode().id);
-    this.buildCacheTree();
+    this.loading = true;
+    this.cache.service.addNode(this.source.getSelectedNode().id).then((resp) => {
+      this.loading = false;
+    });
   }
   
   appendCreate() {
@@ -127,10 +131,10 @@ export class AppComponent implements OnInit  {
   resetTree() {
     this.loading = true;
     this.source.resetTree().toPromise().then(() => {
-      this.loading = false;
-      this.cache.service.clearIds();
-      this.buildCacheTree();
-      this.buildSourceTree();
+      this.cache.service.clearRawNodes();
+      this.source.service.readAll().then((resp) => {
+        this.loading = false;
+      });
     });
   }
   
@@ -149,19 +153,5 @@ export class AppComponent implements OnInit  {
     const dialogRef = this.dialog.open(SetValueDialog, dialogConfig);
     
     return dialogRef.afterClosed().toPromise();
-  }
-  
-  private buildCacheTree() {
-    this.loading = true;
-    this.cache.getTree().then((resp) => {
-      this.loading = false;
-    });
-  }
-  
-  private buildSourceTree() {
-    this.loading = true;
-    this.source.getTree().then((resp) => {
-      this.loading = false;
-    });
   }
 }

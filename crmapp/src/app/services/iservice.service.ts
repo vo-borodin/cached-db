@@ -51,8 +51,6 @@ export abstract class IService {
     return nodes;
   }
   
-  public abstract getTree();
-  
   public resetNodes(): Observable<any> {
     return this.httpClient.get(`${this.API_URL}/reset/`, { responseType: 'text' });
   }

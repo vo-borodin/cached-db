@@ -85,19 +85,28 @@ export class Cache extends IService {
     super(httpClient);
   }
   
-  private _ids: Array<any> = [];
+  private _rawNodes: Array<any> = [];
   private changes: Array<Operation> = [];
 
-  public addId(newId: any) {
-    this._ids.push(newId);
+  public addNode(id: any) {
+    return this.httpClient.get(`${this.API_URL}/nodes`, {
+      params: {
+        id: id
+      }
+    }).toPromise().then((data) => {
+      this._rawNodes = this._rawNodes.concat(data);
+      this.dataChange.next(this.buildData(this._rawNodes));
+    });
   }
   
-  public clearIds() {
-    this._ids = [];
+  public clearRawNodes() {
+    this._rawNodes = [];
   }
   
-  public get ids(): Array<any> {
-    return this._ids;
+  public contains(id: any): Boolean {
+    return this._rawNodes.some((rawNode) => {
+      return rawNode.id == id;
+    });
   }
   
   appendOperation(op: Operation) {
@@ -106,21 +115,5 @@ export class Cache extends IService {
   
   get applyable() {
     return this.changes.length;
-  }
-  
-  getTree() {
-    var promise;
-    if (this._ids.length) {
-      promise = this.httpClient.get(`${this.API_URL}/nodes`, {
-        params: {
-          id: this._ids.map<string>((id) => { return id.toString(); })
-        }
-      }).toPromise();
-    } else {
-      promise = Promise.resolve([]);
-    }
-    return promise.then((data: Array<any>) => {
-      return this.dataChange.next(this.buildData(data));
-    });
   }
 }

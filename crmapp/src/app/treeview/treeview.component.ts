@@ -20,10 +20,6 @@ class TreeViewComponent {
     });
   }
 
-  getTree () {
-    return this.service.getTree();
-  }
-
   hasNestedChild = (_: number, nodeData: Node) => !!nodeData.children.length;
 
   private _getChildren = (node: Node) => node.children;
