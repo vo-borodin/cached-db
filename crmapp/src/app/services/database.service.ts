@@ -1,7 +1,6 @@
 import { IService } from './iservice.service';
 import { HttpClient} from  '@angular/common/http';
-import { BehaviorSubject } from 'rxjs';
-import { Component, Injectable} from '@angular/core';
+import { Injectable} from '@angular/core';
 import { Node } from '../models/node.model';
 
 @Injectable({
@@ -13,7 +12,9 @@ export class Database extends IService {
   }
 
   readAll() {
+    this.loading = true;
     return this.httpClient.get(`${this.API_URL}/nodes`).toPromise().then((data: Array<any>) => {
+      this.loading = false;
       return this.dataChange.next(this.buildData(data));
     });
   }

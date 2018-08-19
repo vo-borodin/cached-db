@@ -1,8 +1,10 @@
 import { IService } from './iservice.service';
 import { HttpClient} from  '@angular/common/http';
-import { Component, Injectable} from '@angular/core';
-import { Observable } from 'rxjs';
-import { Promise } from 'es6-promise';
+import { Injectable} from '@angular/core';
+import { Subject } from 'rxjs';
+import { merge } from 'rxjs/observable/merge';
+import { switchMap } from 'rxjs/operators';
+import { map } from 'rxjs/operators/map';
 import { Node } from '../models/node.model';
 
 enum OperationEnum {
@@ -32,7 +34,8 @@ export class Create extends Operation {
     this._value = value;
   }
   
-  public call(nodes: Node[]): Node[] {
+  public call(nodes: Array<any>): Array<any> {
+    console.log("Create pre-applyed");
     return nodes;
   }
 }
@@ -49,7 +52,8 @@ export class Delete extends Operation {
     this._id = id;
   }
   
-  public call(nodes: Node[]): Node[] {
+  public call(nodes: Array<any>): Array<any> {
+    console.log("Delete pre-applyed");
     return nodes;
   }
 }
@@ -72,7 +76,8 @@ export class Update extends Operation {
     this._value = value;
   }
   
-  public call(nodes: Node[]): Node[] {
+  public call(nodes: Array<any>): Array<any> {
+    console.log("Update pre-applyed");
     return nodes;
   }
 }
@@ -83,23 +88,34 @@ export class Update extends Operation {
 export class Cache extends IService {
   constructor(protected httpClient: HttpClient) {
     super(httpClient);
-  }
-  
-  private _rawNodes: Array<any> = [];
-  private changes: Array<Operation> = [];
-
-  public addNode(id: any) {
-    return this.httpClient.get(`${this.API_URL}/nodes`, {
-      params: {
-        id: id
-      }
-    }).toPromise().then((data) => {
-      this._rawNodes = this._rawNodes.concat(data);
-      this.dataChange.next(this.buildData(this._rawNodes));
+    
+    merge(this._addIdSubject.pipe(
+      switchMap((id) => {
+        this.loading = true;
+        return this.httpClient.get(`${this.API_URL}/nodes`, {
+          params: {
+            id: id.toString()
+          }
+        });
+      }),
+      map((data) => {
+        this.loading = false;
+        this._rawNodes = this._rawNodes.concat(data);
+      })
+    ), this._changesSubject).subscribe(() => {
+      var preApplied = this.preApplyChanges();
+      return this.dataChange.next(this.buildData(preApplied));
     });
   }
   
-  public clearRawNodes() {
+  private _addIdSubject = new Subject();
+  
+  private _rawNodes: Array<any> = [];
+  
+  private _changes: Array<Operation> = [];
+  private _changesSubject = new Subject();
+  
+  public clear() {
     this._rawNodes = [];
   }
   
@@ -108,12 +124,23 @@ export class Cache extends IService {
       return rawNode.id == id;
     });
   }
+
+  public addNode(id: any) {
+    return this._addIdSubject.next(id);
+  }
   
-  appendOperation(op: Operation) {
-    this.changes.push(op);
+  public addOperation(op: Operation) {
+    this._changes.push(op);
+    this._changesSubject.next(this._changes);
   }
   
   get applyable() {
-    return this.changes.length;
+    return this._changes.length;
+  }
+  
+  preApplyChanges(): Array<any> {
+    return this._changes.reduce((accum, operation) => {
+      return operation.call(accum);
+    }, this._rawNodes);
   }
 }

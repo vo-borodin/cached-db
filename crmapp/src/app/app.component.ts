@@ -7,7 +7,8 @@ import { DBTreeViewComponent, CachTreeViewComponent } from './treeview/treeview.
 @Component({
   template: `<div class="set-value-dialog">
               <h2 mat-dialog-title>{{title}}</h2>
-              <input matInput [value]="value || ''"
+              <input matInput type="text"
+                              [(ngModel)]="value"
                               placeholder="Enter value..." />
               <mat-dialog-actions>
                 <button class="mat-raised-button"(click)="close()">Close</button>
@@ -16,8 +17,8 @@ import { DBTreeViewComponent, CachTreeViewComponent } from './treeview/treeview.
             </div>`
 })
 export class SetValueDialog implements OnInit {
-  value: string;
-  title: string;
+  value: string = '';
+  title: string = '';
   
   constructor(private dialogRef: MatDialogRef<SetValueDialog>, @Inject(MAT_DIALOG_DATA) data) {
     this.value = data.value;
@@ -43,8 +44,7 @@ export class SetValueDialog implements OnInit {
   styleUrls: [ './app.component.css' ]
 })
 export class AppComponent implements OnInit  {
-  title = 'cached-db'; 
-  loading: boolean = false;
+  title = 'cached-db';
 
   constructor(private dialog: MatDialog) { }
 
@@ -70,10 +70,7 @@ export class AppComponent implements OnInit  {
   private elLoader: ElementRef;
 
   ngOnInit() {
-    this.loading = true;
-    this.source.service.readAll().then((resp) => {
-      this.loading = false;
-    });
+    this.source.service.readAll();
   }
   
   isMoveDisabled() {
@@ -90,36 +87,34 @@ export class AppComponent implements OnInit  {
   }
   
   moveSelectedToCache() {
-    this.loading = true;
-    this.cache.service.addNode(this.source.getSelectedNode().id).then((resp) => {
-      this.loading = false;
-    });
+    this.cache.service.addNode(this.source.getSelectedNode().id);
+    this.source.deselect();
   }
   
-  appendCreate() {
-    this.openDialog("Add New Child of Node", "").then(data => {
-      if (data && data.value.trim()) {
-        var c = new Create(this.cache.getSelectedNode().id, data.value);
-        this.cache.service.appendOperation(c);
+  addCreate() {
+    this.openDialog("Add New Child of Node", "").then((value) => {
+      if (value && value.trim()) {
+        var c = new Create(this.cache.getSelectedNode().id, value);
+        this.cache.service.addOperation(c);
       }
     });
   }
   
-  appendDelete() {
+  addDelete() {
     var selectedNode = this.cache.getSelectedNode();
     if (confirm("Are you sure you want to delete the node '" + selectedNode.value + "'?")) {
       var d = new Delete(selectedNode.id);
-      this.cache.service.appendOperation(d);
+      this.cache.service.addOperation(d);
     }
   }
   
-  appendUpdate() {
+  addUpdate() {
     var selectedNode = this.cache.getSelectedNode();
     var oldValue = selectedNode.value;
-    this.openDialog("Edit Node", selectedNode.value).then(data => {
-      if (data && oldValue != data.value) {
-        var u = new Update(selectedNode.id, data.value);
-        this.cache.service.appendOperation(u);
+    this.openDialog("Edit Node", selectedNode.value).then((value) => {
+      if (value && oldValue != value) {
+        var u = new Update(selectedNode.id, value);
+        this.cache.service.addOperation(u);
       }
     });
   }
@@ -129,12 +124,9 @@ export class AppComponent implements OnInit  {
   }
   
   resetTree() {
-    this.loading = true;
     this.source.resetTree().toPromise().then(() => {
-      this.cache.service.clearRawNodes();
-      this.source.service.readAll().then((resp) => {
-        this.loading = false;
-      });
+      this.cache.service.clear();
+      this.source.service.readAll();
     });
   }
   

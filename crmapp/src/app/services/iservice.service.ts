@@ -1,7 +1,8 @@
-import { Component, Injectable} from '@angular/core';
+import { Injectable} from '@angular/core';
 import { HttpClient} from  '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Node } from '../models/node.model';
+import 'rxjs/add/operator/map';
 
 @Injectable()
 export abstract class IService {
@@ -12,6 +13,8 @@ export abstract class IService {
   public dataChange = new BehaviorSubject<Node[]>([]);
 
   public constructor(protected httpClient: HttpClient) { }
+  
+  public loading: boolean = false;
 
   protected buildData(data: Array<any>) {
     var items = {};
@@ -52,6 +55,12 @@ export abstract class IService {
   }
   
   public resetNodes(): Observable<any> {
-    return this.httpClient.get(`${this.API_URL}/reset/`, { responseType: 'text' });
+    this.loading = true;
+    return this.httpClient.get(`${this.API_URL}/reset/`, {
+      responseType: 'text'
+    }).map((resp) => {
+      this.loading = false;
+      return resp;
+    });
   }
 }

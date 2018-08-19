@@ -23,17 +23,17 @@
       </tr>
       <tr>
         <td>
-          <button #createButton (click)="appendCreate()"
+          <button #createButton (click)="addCreate()"
                                 [disabled]="isOperDisabled()"
                                 [style.cursor]="isOperDisabled() ? 'default' : 'pointer'">+</button>
         </td>
         <td>
-          <button #deleteButton (click)="appendDelete()"
+          <button #deleteButton (click)="addDelete()"
                                 [disabled]="isOperDisabled()"
                                 [style.cursor]="isOperDisabled() ? 'default' : 'pointer'">-</button>
         </td>
         <td colspan="3">
-          <button #updateButton (click)="appendUpdate()"
+          <button #updateButton (click)="addUpdate()"
                                 [disabled]="isOperDisabled()"
                                 [style.cursor]="isOperDisabled() ? 'default' : 'pointer'">a</button>
         </td>
@@ -49,7 +49,7 @@
       </tr>
     </table>
   </div>
-  <div #loader [hidden]="!loading">
+  <div #loader [hidden]="!(source.service.loading || cache.service.loading)">
     <div class="loader">
       <mat-spinner></mat-spinner>
     </div>

@@ -1,7 +1,6 @@
 import { Component} from '@angular/core';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
-import { BehaviorSubject } from 'rxjs';
 import { IService } from '../services/iservice.service';
 import { Database } from '../services/database.service';
 import { Cache } from '../services/cache.service';
@@ -42,6 +41,10 @@ class TreeViewComponent {
   
   getSelectedNode(): Node {
     return this._selectedNode;
+  }
+  
+  deselect() {
+    this.rowClick(this._selectedNode);
   }
 }
 
