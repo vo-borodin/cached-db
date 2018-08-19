@@ -13,9 +13,9 @@ class NodeListAPIView(generics.ListCreateAPIView):
     #permission_classes = (IsAdminUser,)
     
     def get_queryset(self):
-        ids = list(map(int, self.request.query_params.getlist('id')))
-        if len(ids):
-            return Node.objects.filter(id__in=ids)
+        if 'id' in self.request.query_params:
+            id = int(self.request.query_params.get('id'))
+            return Node.objects.filter(id=id)
         else:
             return Node.objects.all()
 

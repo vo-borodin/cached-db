@@ -13,7 +13,8 @@
         <td colspan="2">
           <div class="move-btn-container">
             <button #selectButton (click)="moveSelectedToCache()"
-                                  [disabled]="!source.getSelectedNodes().length"><<<</button>
+                                  [disabled]="isMoveDisabled()"
+                                  [style.cursor]="isMoveDisabled() ? 'default' : 'pointer'"><<<</button>
           </div>
         </td>
         <td colspan="9">
@@ -23,22 +24,27 @@
       <tr>
         <td>
           <button #createButton (click)="appendCreate()"
-                                [disabled]="cache.getSelectedNodes().length != 1">+</button>
+                                [disabled]="isOperDisabled()"
+                                [style.cursor]="isOperDisabled() ? 'default' : 'pointer'">+</button>
         </td>
         <td>
           <button #deleteButton (click)="appendDelete()"
-                                [disabled]="cache.getSelectedNodes().length != 1">-</button>
+                                [disabled]="isOperDisabled()"
+                                [style.cursor]="isOperDisabled() ? 'default' : 'pointer'">-</button>
         </td>
         <td colspan="3">
           <button #updateButton (click)="appendUpdate()"
-                                [disabled]="cache.getSelectedNodes().length != 1">a</button>
+                                [disabled]="isOperDisabled()"
+                                [style.cursor]="isOperDisabled() ? 'default' : 'pointer'">a</button>
         </td>
         <td colspan="2">
           <button #applyButton (click)="applyChanges()"
-                               [disabled]="!cache.service.applyable">Apply</button>
+                               [disabled]="isApplyDisabled()"
+                               [style.cursor]="isApplyDisabled() ? 'default' : 'pointer'">Apply</button>
         </td>
         <td colspan="2">
-          <button #resetButton (click)="resetTree()">Reset</button>
+          <button #resetButton class="reset-button"
+                               (click)="resetTree()">Reset</button>
         </td>
       </tr>
     </table>

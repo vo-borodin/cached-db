@@ -88,8 +88,16 @@ export class Cache extends IService {
   private _ids: Array<any> = [];
   private changes: Array<Operation> = [];
 
-  set ids(newIds: Array<any>) {
-    this._ids = Array.from(new Set(newIds));
+  public addId(newId: any) {
+    this._ids.push(newId);
+  }
+  
+  public clearIds() {
+    this._ids = [];
+  }
+  
+  public get ids(): Array<any> {
+    return this._ids;
   }
   
   appendOperation(op: Operation) {

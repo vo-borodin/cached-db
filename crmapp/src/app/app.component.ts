@@ -74,32 +74,43 @@ export class AppComponent implements OnInit  {
     this.buildSourceTree();
   }
   
+  isMoveDisabled() {
+    var node = this.source.getSelectedNode();
+    return !node || this.cache.service.ids.indexOf(node.id) != -1;
+  }
+  
+  isOperDisabled() {
+    return !this.cache.getSelectedNode();
+  }
+  
+  isApplyDisabled() {
+    return !this.cache.service.applyable;
+  }
+  
   moveSelectedToCache() {
-    this.cache.service.ids = this.source.getSelectedNodes().map<any>((node) => {
-      return node.id;
-    });
+    this.cache.service.addId(this.source.getSelectedNode().id);
     this.buildCacheTree();
   }
   
   appendCreate() {
     this.openDialog("Add New Child of Node", "").then(data => {
       if (data && data.value.trim()) {
-        var c = new Create(this.cache.getSelectedNodes()[0].id, data.value);
+        var c = new Create(this.cache.getSelectedNode().id, data.value);
         this.cache.service.appendOperation(c);
       }
     });
   }
   
   appendDelete() {
-    var selectedNode = this.cache.getSelectedNodes()[0];
+    var selectedNode = this.cache.getSelectedNode();
     if (confirm("Are you sure you want to delete the node '" + selectedNode.value + "'?")) {
-      var d = new Delete(this.cache.getSelectedNodes()[0].id);
+      var d = new Delete(selectedNode.id);
       this.cache.service.appendOperation(d);
     }
   }
   
   appendUpdate() {
-    var selectedNode = this.cache.getSelectedNodes()[0];
+    var selectedNode = this.cache.getSelectedNode();
     var oldValue = selectedNode.value;
     this.openDialog("Edit Node", selectedNode.value).then(data => {
       if (data && oldValue != data.value) {
@@ -117,7 +128,7 @@ export class AppComponent implements OnInit  {
     this.loading = true;
     this.source.resetTree().toPromise().then(() => {
       this.loading = false;
-      this.cache.service.ids = [];
+      this.cache.service.clearIds();
       this.buildCacheTree();
       this.buildSourceTree();
     });
