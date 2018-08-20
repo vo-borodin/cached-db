@@ -12,9 +12,11 @@
         </td>
         <td colspan="2">
           <div class="move-btn-container">
-            <button (click)="moveSelectedToCache()"
-                    [disabled]="isMoveDisabled()"
-                    [style.cursor]="isMoveDisabled() ? 'default' : 'pointer'"><<<</button>
+            <div matTooltip="Move selected node from right treeview to left">
+              <button (click)="moveSelectedToCache()"
+                      [disabled]="isMoveDisabled()"
+                      [style.cursor]="isMoveDisabled() ? 'default' : 'pointer'"><<<</button>
+            </div>
           </div>
         </td>
         <td colspan="9">
@@ -23,28 +25,38 @@
       </tr>
       <tr>
         <td>
-          <button (click)="addCreate()"
-                  [disabled]="isOperDisabled()"
-                  [style.cursor]="isOperDisabled() ? 'default' : 'pointer'">+</button>
+          <div matTooltip="Add new child to the selected node in left treeview">
+            <button (click)="addCreate()"
+                    [disabled]="isOperDisabled()"
+                    [style.cursor]="isOperDisabled() ? 'default' : 'pointer'">+</button>
+          </div>
         </td>
         <td>
-          <button #deleteButton (click)="addDelete()"
-                  [disabled]="isOperDisabled()"
-                  [style.cursor]="isOperDisabled() ? 'default' : 'pointer'">-</button>
+          <div matTooltip="Delete selected node in the left treeview">
+            <button (click)="addDelete()"
+                    [disabled]="isOperDisabled()"
+                    [style.cursor]="isOperDisabled() ? 'default' : 'pointer'">-</button>
+          </div>
         </td>
         <td colspan="3">
-          <button (click)="addUpdate()"
-                  [disabled]="isOperDisabled()"
-                  [style.cursor]="isOperDisabled() ? 'default' : 'pointer'">a</button>
+          <div matTooltip="Update selected node in the left treeview">
+            <button (click)="addUpdate()"
+                    [disabled]="isOperDisabled()"
+                    [style.cursor]="isOperDisabled() ? 'default' : 'pointer'">a</button>
+          </div>
         </td>
         <td colspan="2">
-          <button (click)="applyChanges()"
-                  [disabled]="isApplyDisabled()"
-                  [style.cursor]="isApplyDisabled() ? 'default' : 'pointer'">Apply</button>
+          <div matTooltip="Apply changes to the data base">
+            <button (click)="applyChanges()"
+                    [disabled]="isApplyDisabled()"
+                    [style.cursor]="isApplyDisabled() ? 'default' : 'pointer'">Apply</button>
+          </div>
         </td>
         <td colspan="2">
-          <button class="reset-button"
-                  (click)="resetTree()">Reset</button>
+          <div matTooltip="Reset data base to the default state">
+            <button class="reset-button"
+                    (click)="resetTree()">Reset</button>
+          </div>
         </td>
       </tr>
     </table>

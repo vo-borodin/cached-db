@@ -5,11 +5,15 @@ import { FormsModule } from '@angular/forms';
 import { MatTreeModule } from '@angular/material/tree';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule } from '@angular/material';
 import { HttpModule } from '@angular/http';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 
-import { AppComponent, SetValueDialog } from './app.component';
+import { AppComponent } from './app.component';
+import { SetValueDialog } from './dialogs/setvaluedialog.component';
+import { ConfirmDialog } from './dialogs/confirmdialog.component';
+import { ShowErrorDialog } from './dialogs/showerrordialog.component';
 import { DBTreeViewComponent, CachTreeViewComponent } from './treeview/treeview.component';
 
 @NgModule({
@@ -20,6 +24,7 @@ import { DBTreeViewComponent, CachTreeViewComponent } from './treeview/treeview.
     MatTreeModule,
     MatGridListModule,
     MatProgressSpinnerModule,
+    MatTooltipModule,
     MatDialogModule,
     HttpModule,
     HttpClientModule,
@@ -27,14 +32,18 @@ import { DBTreeViewComponent, CachTreeViewComponent } from './treeview/treeview.
   declarations: [
     AppComponent,
     SetValueDialog,
+    ConfirmDialog,
+    ShowErrorDialog,
     DBTreeViewComponent,
-    CachTreeViewComponent
+    CachTreeViewComponent,
   ],
   bootstrap: [
-    AppComponent
+    AppComponent,
   ],
   entryComponents: [
-    SetValueDialog
+    SetValueDialog,
+    ConfirmDialog,
+    ShowErrorDialog,
   ]
 })
 export class AppModule { }

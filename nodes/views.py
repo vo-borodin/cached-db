@@ -66,8 +66,8 @@ def apply_view(request):
                         raise Exception('Unable to set value "{0}" to deleted node "{1}". {2}', value, node.value)
                     node.value = value
                     node.save()
-    except Exception as error:
-        return HttpResponseBadRequest(error.args[0].format(error.args[1], error.args[2], "Changes were not applied."))
+    except Exception as e:
+        return HttpResponseBadRequest(e.args[0].format(e.args[1], e.args[2], "Changes were not applied."))
     
     return HttpResponse(json.dumps({'result': 'Changes are applied'}))
 

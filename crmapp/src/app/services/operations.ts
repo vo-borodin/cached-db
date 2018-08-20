@@ -81,7 +81,6 @@ export class Delete extends Operation {
   }
   
   public call(nodes: Array<any>): Array<any> {
-    var del = false;
     nodes.forEach((item) => { 
       this.traverse(item, (a) => {
         if (a.id == this.id) {

@@ -50,7 +50,7 @@ export class Cache extends IService {
     }, this._rawNodes.slice());
   }
   
-  private clearChanges() {
+  public clearChanges() {
     this._changes = [];
     this._changesSubject.next();
   }

@@ -58,10 +58,6 @@ export class DBTreeViewComponent extends TreeViewComponent {
   constructor(public service: Database) {
     super(service);
   }
-  
-  resetTree() {
-    return this.service.resetNodes();
-  }
 }
 
 @Component({

@@ -1,42 +1,10 @@
-import { Component, OnInit, ViewChild, ElementRef, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogConfig } from "@angular/material";
-
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { MatDialog, MatDialogConfig } from '@angular/material';
+import { SetValueDialog } from './dialogs/setvaluedialog.component';
+import { ConfirmDialog } from './dialogs/confirmdialog.component';
+import { ShowErrorDialog } from './dialogs/showerrordialog.component';
 import { Create, Delete, Update } from './services/operations';
 import { DBTreeViewComponent, CachTreeViewComponent } from './treeview/treeview.component';
-
-@Component({
-  template: `<div class="set-value-dialog">
-              <h2 mat-dialog-title>{{title}}</h2>
-              <input matInput type="text"
-                              [(ngModel)]="value"
-                              placeholder="Enter value..." />
-              <mat-dialog-actions>
-                <button class="mat-raised-button"(click)="close()">Close</button>
-                <button class="mat-raised-button mat-primary"(click)="save()">Save</button>
-              </mat-dialog-actions>
-            </div>`
-})
-export class SetValueDialog implements OnInit {
-  value: string = '';
-  title: string = '';
-  
-  constructor(private dialogRef: MatDialogRef<SetValueDialog>, @Inject(MAT_DIALOG_DATA) data) {
-    this.value = data.value;
-    this.title = data.title;
-  }
-  
-  ngOnInit() {
-    
-  }
-  
-  save() {
-    this.dialogRef.close(this.value);
-  }
-
-  close() {
-    this.dialogRef.close();
-  }
-}
 
 @Component({
   selector: 'my-app',
@@ -76,7 +44,7 @@ export class AppComponent implements OnInit  {
   }
   
   addCreate() {
-    this.openDialog("Add New Child of Node", "").then((value) => {
+    this.openSetValueDialog("Add New Child of Node", "").then((value) => {
       if (value && value.trim()) {
         var c = new Create(this.cache.getSelectedNode().id, value);
         this.cache.service.addOperation(c);
@@ -87,18 +55,21 @@ export class AppComponent implements OnInit  {
   
   addDelete() {
     var selectedNode = this.cache.getSelectedNode();
-    if (confirm("Are you sure you want to delete the node '" +
-      selectedNode.value + "' and all its descendants?")) {
-      var d = new Delete(selectedNode.id);
-      this.cache.service.addOperation(d);
-      this.cache.deselect();
-    }
+    var q = "Are you sure you want to delete the node '" +
+      selectedNode.value + "' and all its descendants?"
+    this.openConfirmDialog("Delete Node", q).then((result) => {
+      if (result) {
+        var d = new Delete(selectedNode.id);
+        this.cache.service.addOperation(d);
+        this.cache.deselect();
+      }
+    });
   }
   
   addUpdate() {
     var selectedNode = this.cache.getSelectedNode();
     var oldValue = selectedNode.value;
-    this.openDialog("Edit Node", selectedNode.value).then((value) => {
+    this.openSetValueDialog("Edit Node", selectedNode.value).then((value) => {
       if (value && oldValue != value) {
         var u = new Update(selectedNode.id, value);
         this.cache.service.addOperation(u);
@@ -111,18 +82,21 @@ export class AppComponent implements OnInit  {
     this.cache.service.applyChanges().subscribe((resp) => {
       this.source.service.readAll();
     }, (err) => {
-      alert(err.error);
+      this.openShowErrorDialog("Invalid changes", err.error).then(() => {
+        this.cache.service.clear();
+        this.cache.service.clearChanges();
+      });
     });
   }
   
   resetTree() {
-    this.source.resetTree().toPromise().then(() => {
+    this.source.service.resetNodes().toPromise().then(() => {
       this.cache.service.clear();
       this.source.service.readAll();
     });
   }
   
-  private openDialog(title: string, value: string) {
+  private openSetValueDialog(title: string, value: string) {
     const dialogConfig = new MatDialogConfig();
     
     dialogConfig.disableClose = false;
@@ -135,6 +109,40 @@ export class AppComponent implements OnInit  {
     };
 
     const dialogRef = this.dialog.open(SetValueDialog, dialogConfig);
+    
+    return dialogRef.afterClosed().toPromise();
+  }
+  
+  private openConfirmDialog(title: string, question: string) {
+    const dialogConfig = new MatDialogConfig();
+    
+    dialogConfig.disableClose = false;
+    dialogConfig.autoFocus = true;
+    dialogConfig.hasBackdrop = true;
+    
+    dialogConfig.data = {
+      title: title,
+      question: question
+    };
+    
+    const dialogRef = this.dialog.open(ConfirmDialog, dialogConfig);
+    
+    return dialogRef.afterClosed().toPromise();
+  }
+  
+  private openShowErrorDialog(title: string, message: string) {
+    const dialogConfig = new MatDialogConfig();
+    
+    dialogConfig.disableClose = false;
+    dialogConfig.autoFocus = true;
+    dialogConfig.hasBackdrop = true;
+    
+    dialogConfig.data = {
+      title: title,
+      message: message
+    }
+    
+    const dialogRef = this.dialog.open(ShowErrorDialog, dialogConfig);
     
     return dialogRef.afterClosed().toPromise();
   }
