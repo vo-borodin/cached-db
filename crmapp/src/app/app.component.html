@@ -12,9 +12,9 @@
         </td>
         <td colspan="2">
           <div class="move-btn-container">
-            <button #selectButton (click)="moveSelectedToCache()"
-                                  [disabled]="isMoveDisabled()"
-                                  [style.cursor]="isMoveDisabled() ? 'default' : 'pointer'"><<<</button>
+            <button (click)="moveSelectedToCache()"
+                    [disabled]="isMoveDisabled()"
+                    [style.cursor]="isMoveDisabled() ? 'default' : 'pointer'"><<<</button>
           </div>
         </td>
         <td colspan="9">
@@ -23,28 +23,28 @@
       </tr>
       <tr>
         <td>
-          <button #createButton (click)="addCreate()"
-                                [disabled]="isOperDisabled()"
-                                [style.cursor]="isOperDisabled() ? 'default' : 'pointer'">+</button>
+          <button (click)="addCreate()"
+                  [disabled]="isOperDisabled()"
+                  [style.cursor]="isOperDisabled() ? 'default' : 'pointer'">+</button>
         </td>
         <td>
           <button #deleteButton (click)="addDelete()"
-                                [disabled]="isOperDisabled()"
-                                [style.cursor]="isOperDisabled() ? 'default' : 'pointer'">-</button>
+                  [disabled]="isOperDisabled()"
+                  [style.cursor]="isOperDisabled() ? 'default' : 'pointer'">-</button>
         </td>
         <td colspan="3">
-          <button #updateButton (click)="addUpdate()"
-                                [disabled]="isOperDisabled()"
-                                [style.cursor]="isOperDisabled() ? 'default' : 'pointer'">a</button>
+          <button (click)="addUpdate()"
+                  [disabled]="isOperDisabled()"
+                  [style.cursor]="isOperDisabled() ? 'default' : 'pointer'">a</button>
         </td>
         <td colspan="2">
-          <button #applyButton (click)="applyChanges()"
-                               [disabled]="isApplyDisabled()"
-                               [style.cursor]="isApplyDisabled() ? 'default' : 'pointer'">Apply</button>
+          <button (click)="applyChanges()"
+                  [disabled]="isApplyDisabled()"
+                  [style.cursor]="isApplyDisabled() ? 'default' : 'pointer'">Apply</button>
         </td>
         <td colspan="2">
-          <button #resetButton class="reset-button"
-                               (click)="resetTree()">Reset</button>
+          <button class="reset-button"
+                  (click)="resetTree()">Reset</button>
         </td>
       </tr>
     </table>

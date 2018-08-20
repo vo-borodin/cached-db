@@ -1,4 +1,4 @@
-import { Component} from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
 import { IService } from '../services/iservice.service';
@@ -51,7 +51,8 @@ class TreeViewComponent {
 @Component({
   selector: 'db-tree-view',
   templateUrl: 'treeview.component.html',
-  styleUrls: ['treeview.component.css']
+  styleUrls: ['treeview.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DBTreeViewComponent extends TreeViewComponent {
   constructor(public service: Database) {
@@ -66,7 +67,8 @@ export class DBTreeViewComponent extends TreeViewComponent {
 @Component({
   selector: 'cach-tree-view',
   templateUrl: 'treeview.component.html',
-  styleUrls: ['treeview.component.css']
+  styleUrls: ['treeview.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CachTreeViewComponent extends TreeViewComponent {
   constructor(public service: Cache) {

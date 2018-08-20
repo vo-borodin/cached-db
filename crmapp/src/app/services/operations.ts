@@ -64,7 +64,6 @@ export class Create extends Operation {
         }
       );
     });
-    nodes.push(newRawNode);
     return nodes;
   }
 }

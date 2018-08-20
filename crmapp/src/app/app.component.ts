@@ -87,7 +87,8 @@ export class AppComponent implements OnInit  {
   
   addDelete() {
     var selectedNode = this.cache.getSelectedNode();
-    if (confirm("Are you sure you want to delete the node '" + selectedNode.value + "'?")) {
+    if (confirm("Are you sure you want to delete the node '" +
+      selectedNode.value + "' and all its descendants?")) {
       var d = new Delete(selectedNode.id);
       this.cache.service.addOperation(d);
       this.cache.deselect();
