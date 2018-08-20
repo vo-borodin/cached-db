@@ -74,12 +74,6 @@ export class Delete extends Operation {
    *    -- id of record to delete
    */
   private id: any;
-  /** ids: Array of primary keys
-   *    -- identifiers of deleted
-   *    -- items, collected for
-   *    -- push to server
-   */
-  private ids: Array<any> = [];
   
   constructor(id: any) {
     super();
@@ -89,14 +83,15 @@ export class Delete extends Operation {
   
   public call(nodes: Array<any>): Array<any> {
     var del = false;
-    this.ids = [];
-    var item = nodes.filter((item) => { return item.id == this.id; })[0];
-    this.traverse(item,
-      (a) => {
-        a.is_deleted = true;
-        this.ids.push(a.id);
-      }
-    );
+    nodes.forEach((item) => { 
+      this.traverse(item, (a) => {
+        if (a.id == this.id) {
+          this.traverse(a, (b) => {
+            b.is_deleted = true;
+          });
+        }
+      });
+    });
     return nodes;
   }
 }

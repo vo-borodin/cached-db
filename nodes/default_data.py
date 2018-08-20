@@ -7,12 +7,12 @@ def default_nodes(apps, schema_editor):
 
 def reset_nodes(cls):
     for k, v in DATA.items():
-        node = cls.objects.create(parent_id=None, is_deleted=False, value=v["value"])
+        node = cls.nodes.create(parent_id=None, is_deleted=False, value=v["value"])
         node.save()
         v["pk"] = node.pk
     for k, v in DATA.items():
         if v["parentId"]:
-            node = cls.objects.get(pk=int(v["pk"]))
-            node.parent_id = cls.objects.get(pk=int(DATA[v["parentId"]]["pk"]))
+            node = cls.nodes.get(pk=int(v["pk"]))
+            node.parent_id = cls.nodes.get(pk=int(DATA[v["parentId"]]["pk"]))
             node.save()
 
