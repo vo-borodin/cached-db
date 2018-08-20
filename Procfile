@@ -1,1 +1,1 @@
-web: gunicorn cacheddb.wsgi --log-file –
+web: gunicorn simplecrm.wsgi --log-file –
