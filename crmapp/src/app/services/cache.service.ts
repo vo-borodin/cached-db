@@ -92,7 +92,7 @@ export class Cache extends IService {
       return resp;
     }), catchError((err, _) => {
       this.loading = false;
-      return of({error: err});
+      throw err;
     }));
   }
 }

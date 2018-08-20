@@ -109,6 +109,8 @@ export class AppComponent implements OnInit  {
   applyChanges() {
     this.cache.service.applyChanges().subscribe((resp) => {
       this.source.service.readAll();
+    }, (err) => {
+      alert(err.error);
     });
   }
   
