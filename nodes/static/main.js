@@ -536,7 +536,7 @@ var Cache = /** @class */ (function (_super) {
         _this._changesSubject = new rxjs__WEBPACK_IMPORTED_MODULE_3__["Subject"]();
         Object(rxjs_observable_merge__WEBPACK_IMPORTED_MODULE_4__["merge"])(_this._addIdSubject.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["switchMap"])(function (id) {
             _this.loading = true;
-            return _this.httpClient.get(_this.API_URL + "/nodes/", {
+            return _this.httpClient.get(_this.API_URL + "nodes/", {
                 params: {
                     id: id.toString()
                 }
@@ -586,7 +586,7 @@ var Cache = /** @class */ (function (_super) {
     Cache.prototype.applyChanges = function () {
         var _this = this;
         this.loading = true;
-        return this.httpClient.post(this.API_URL + "/apply", {
+        return this.httpClient.post(this.API_URL + "apply", {
             params: {
                 changes: this._changes
             }
@@ -658,7 +658,7 @@ var Database = /** @class */ (function (_super) {
     Database.prototype.readAll = function () {
         var _this = this;
         this.loading = true;
-        return this.httpClient.get(this.API_URL + "/nodes/").toPromise().then(function (data) {
+        return this.httpClient.get(this.API_URL + "nodes/").toPromise().then(function (data) {
             _this.loading = false;
             return _this.dataChange.next(_this.buildData(data));
         }, function (error) {
@@ -710,7 +710,7 @@ var __metadata = (undefined && undefined.__metadata) || function (k, v) {
 var IService = /** @class */ (function () {
     function IService(httpClient) {
         this.httpClient = httpClient;
-        this.API_URL = 'http://localhost:8000';
+        this.API_URL = window.location.href;
         this.dataChange = new rxjs__WEBPACK_IMPORTED_MODULE_2__["BehaviorSubject"]([]);
         this.loading = false;
     }
@@ -758,7 +758,7 @@ var IService = /** @class */ (function () {
     IService.prototype.resetNodes = function () {
         var _this = this;
         this.loading = true;
-        return this.httpClient.get(this.API_URL + "/reset/", {
+        return this.httpClient.get(this.API_URL + "reset/", {
             responseType: 'text'
         }).map(function (resp) {
             _this.loading = false;

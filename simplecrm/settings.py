@@ -126,7 +126,7 @@ STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
-    os.path.join(PROJECT_ROOT, "nodes/static"),
+    os.path.join(BASE_DIR, "nodes/static"),
 )
 
 CORS_ORIGIN_WHITELIST = (

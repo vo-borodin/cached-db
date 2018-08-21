@@ -6,7 +6,7 @@ import 'rxjs/add/operator/map';
 
 @Injectable()
 export abstract class IService {
-  protected API_URL  =  'http://localhost:8000';
+  protected API_URL  = window.location.href;
 
   public get data(): Node[] { return this.dataChange.value; }
 
@@ -56,7 +56,7 @@ export abstract class IService {
   
   public resetNodes(): Observable<any> {
     this.loading = true;
-    return this.httpClient.get(`${this.API_URL}/reset/`, {
+    return this.httpClient.get(`${this.API_URL}reset/`, {
       responseType: 'text'
     }).map((resp) => {
       this.loading = false;
