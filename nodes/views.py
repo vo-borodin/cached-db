@@ -9,6 +9,8 @@ from django.db import transaction
 import json
 # Create your views here.
 
+def index(request):
+    return render(request, 'index.html')
 
 class NodeListAPIView(generics.ListCreateAPIView):
     serializer_class = NodeSerializer
