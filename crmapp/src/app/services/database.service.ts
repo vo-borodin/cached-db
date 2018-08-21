@@ -13,7 +13,7 @@ export class Database extends IService {
 
   readAll() {
     this.loading = true;
-    return this.httpClient.get(`${this.API_URL}/nodes/`).toPromise().then((data: Array<any>) => {
+    return this.httpClient.get(`${this.API_URL}nodes/`).toPromise().then((data: Array<any>) => {
       this.loading = false;
       return this.dataChange.next(this.buildData(data));
     }, (error) => {

@@ -19,7 +19,7 @@ export class Cache extends IService {
     merge(this._addIdSubject.pipe(
       switchMap((id) => {
         this.loading = true;
-        return this.httpClient.get(`${this.API_URL}/nodes/`, {
+        return this.httpClient.get(`${this.API_URL}nodes/`, {
           params: {
             id: id.toString()
           }
@@ -80,7 +80,7 @@ export class Cache extends IService {
   
   public applyChanges() {
     this.loading = true;
-    return this.httpClient.post<any>(`${this.API_URL}/apply`, {
+    return this.httpClient.post<any>(`${this.API_URL}apply`, {
         params: {
           changes: this._changes
         }

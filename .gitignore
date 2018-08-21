@@ -1,4 +1,6 @@
+.env
 *.pyc
+staticfiles/
 Include/
 Lib/
 Scripts/
