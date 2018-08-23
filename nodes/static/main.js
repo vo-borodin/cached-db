@@ -102,7 +102,7 @@ var AppComponent = /** @class */ (function () {
     };
     AppComponent.prototype.addCreate = function () {
         var _this = this;
-        this.openSetValueDialog("Add New Child of Node", "").then(function (value) {
+        this.openSetValueDialog('Add New Child of Node', '').then(function (value) {
             if (value && value.trim()) {
                 var c = new _services_operations__WEBPACK_IMPORTED_MODULE_5__["Create"](_this.cache.getSelectedNode().id, value);
                 _this.cache.service.addOperation(c);
@@ -113,9 +113,8 @@ var AppComponent = /** @class */ (function () {
     AppComponent.prototype.addDelete = function () {
         var _this = this;
         var selectedNode = this.cache.getSelectedNode();
-        var q = "Are you sure you want to delete the node '" +
-            selectedNode.value + "' and all its descendants?";
-        this.openConfirmDialog("Delete Node", q).then(function (result) {
+        var q = "Are you sure you want to delete the node \"" + selectedNode.value + "\" and all its descendants?";
+        this.openConfirmDialog('Delete Node', q).then(function (result) {
             if (result) {
                 var d = new _services_operations__WEBPACK_IMPORTED_MODULE_5__["Delete"](selectedNode.id);
                 _this.cache.service.addOperation(d);
@@ -127,7 +126,7 @@ var AppComponent = /** @class */ (function () {
         var _this = this;
         var selectedNode = this.cache.getSelectedNode();
         var oldValue = selectedNode.value;
-        this.openSetValueDialog("Edit Node", selectedNode.value).then(function (value) {
+        this.openSetValueDialog('Edit Node', selectedNode.value).then(function (value) {
             if (value && oldValue != value) {
                 var u = new _services_operations__WEBPACK_IMPORTED_MODULE_5__["Update"](selectedNode.id, value);
                 _this.cache.service.addOperation(u);
@@ -140,7 +139,7 @@ var AppComponent = /** @class */ (function () {
         this.cache.service.applyChanges().subscribe(function (resp) {
             _this.source.service.readAll();
         }, function (err) {
-            _this.openShowErrorDialog("Invalid changes", err.error).then(function () {
+            _this.openShowErrorDialog('Invalid changes', err.error).then(function () {
                 _this.cache.service.clear();
                 _this.cache.service.clearChanges();
             });
@@ -148,8 +147,9 @@ var AppComponent = /** @class */ (function () {
     };
     AppComponent.prototype.resetTree = function () {
         var _this = this;
-        this.source.service.resetNodes().toPromise().then(function () {
+        this.source.service.resetNodes().subscribe(function () {
             _this.cache.service.clear();
+            _this.cache.service.clearChanges();
             _this.source.service.readAll();
         });
     };
@@ -534,19 +534,20 @@ var Cache = /** @class */ (function (_super) {
         _this._rawNodes = [];
         _this._changes = [];
         _this._changesSubject = new rxjs__WEBPACK_IMPORTED_MODULE_3__["Subject"]();
-        Object(rxjs_observable_merge__WEBPACK_IMPORTED_MODULE_4__["merge"])(_this._addIdSubject.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["switchMap"])(function (id) {
+        Object(rxjs_observable_merge__WEBPACK_IMPORTED_MODULE_4__["merge"])(_this._addIdSubject.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["switchMap"])(function (ids) {
             _this.loading = true;
-            return _this.httpClient.get(_this.API_URL + "nodes/", {
+            var method = (ids.length == 1 ? 'single' : 'filter');
+            return _this.httpClient.get("" + _this.API_URL + method + "/", {
                 params: {
-                    id: id.toString()
+                    id: ids
                 }
             });
-        }), Object(rxjs_operators_map__WEBPACK_IMPORTED_MODULE_6__["map"])(function (nodes) {
-            _this._rawNodes = _this._rawNodes.concat(nodes);
+        }), Object(rxjs_operators_map__WEBPACK_IMPORTED_MODULE_6__["map"])(function (nodesOrSingle) {
+            _this._rawNodes = _this._rawNodes.concat(nodesOrSingle);
         })), _this._changesSubject).subscribe(function () {
             _this.loading = false;
             var preApplied = _this.preApplyChanges();
-            return _this.dataChange.next(_this.buildData(preApplied));
+            return _this.dataChange.next(_this.buildData(preApplied.slice()));
         }, function (error) {
             _this.loading = false;
         });
@@ -559,7 +560,7 @@ var Cache = /** @class */ (function (_super) {
     };
     Cache.prototype.clearChanges = function () {
         this._changes = [];
-        this._changesSubject.next();
+        return this._changesSubject.next();
     };
     Cache.prototype.clear = function () {
         this._rawNodes = [];
@@ -570,7 +571,7 @@ var Cache = /** @class */ (function (_super) {
         });
     };
     Cache.prototype.addNode = function (id) {
-        return this._addIdSubject.next(id);
+        return this._addIdSubject.next([id.toString()]);
     };
     Cache.prototype.addOperation = function (op) {
         this._changes.push(op);
@@ -588,13 +589,13 @@ var Cache = /** @class */ (function (_super) {
         this.loading = true;
         return this.httpClient.post(this.API_URL + "apply", {
             params: {
-                changes: this._changes
+                changes: this._changes,
+                ids: this._rawNodes.map(function (item) { return item.id; })
             }
         }).pipe(Object(rxjs_operators_map__WEBPACK_IMPORTED_MODULE_6__["map"])(function (resp) {
             _this.loading = false;
-            _this.clear();
-            _this.clearChanges();
-            return resp;
+            _this._changes = [];
+            return _this._addIdSubject.next(resp.ids);
         }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["catchError"])(function (err, _) {
             _this.loading = false;
             throw err;
@@ -692,7 +693,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _angular_common_http__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/common/http */ "./node_modules/@angular/common/fesm5/http.js");
 /* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm5/index.js");
 /* harmony import */ var _models_node_model__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../models/node.model */ "./src/app/models/node.model.ts");
-/* harmony import */ var rxjs_add_operator_map__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! rxjs/add/operator/map */ "./node_modules/rxjs-compat/_esm5/add/operator/map.js");
+/* harmony import */ var rxjs_operators_map__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! rxjs/operators/map */ "./node_modules/rxjs-compat/_esm5/operators/map.js");
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -726,16 +727,16 @@ var IService = /** @class */ (function () {
             items[item.id] = item;
         });
         for (var k in items) {
-            var parentId = items[k]["parent_id"];
+            var parentId = items[k].parent_id;
             if (parentId in items) {
-                if ("children" in items[parentId])
-                    items[parentId]["children"][k] = items[k];
+                if ('children' in items[parentId])
+                    items[parentId].children[k] = items[k];
                 else
-                    items[parentId]["children"] = { k: items[k] };
+                    items[parentId].children = { k: items[k] };
                 toRemove.push(k);
             }
-            if (!("children" in items[k]))
-                items[k]["children"] = {};
+            if (!('children' in items[k]))
+                items[k].children = {};
         }
         toRemove.forEach(function (id) {
             delete items[id];
@@ -750,7 +751,7 @@ var IService = /** @class */ (function () {
             node.id = item.id;
             node.deleted = item.is_deleted;
             node.value = item.value;
-            node.children = this.buildTree(item["children"]);
+            node.children = this.buildTree(item.children);
             nodes.push(node);
         }
         return nodes;
@@ -760,10 +761,10 @@ var IService = /** @class */ (function () {
         this.loading = true;
         return this.httpClient.get(this.API_URL + "reset/", {
             responseType: 'text'
-        }).map(function (resp) {
+        }).pipe(Object(rxjs_operators_map__WEBPACK_IMPORTED_MODULE_4__["map"])(function (resp) {
             _this.loading = false;
             return resp;
-        });
+        }));
     };
     IService = __decorate([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["Injectable"])(),
@@ -812,11 +813,6 @@ var Operation = /** @class */ (function () {
     function Operation() {
         this.name = this.constructor.name;
     }
-    Operation.prototype.traverse = function (item, callback) {
-        callback(item);
-        for (var k in item.children)
-            this.traverse(item.children[k], callback);
-    };
     return Operation;
 }());
 
@@ -839,19 +835,19 @@ var Create = /** @class */ (function (_super) {
         var _this = this;
         if (!this.id)
             this.id = guid_typescript__WEBPACK_IMPORTED_MODULE_0__["Guid"].raw();
+        var way_to_root = "";
+        nodes.forEach(function (item) {
+            if (item.id == _this.parentId)
+                way_to_root = item.way_to_root;
+        });
         var newRawNode = {
             id: this.id,
             is_deleted: false,
             parent_id: this.parentId,
-            children: {},
-            value: this.value
+            value: this.value,
+            way_to_root: this.id + "," + way_to_root
         };
-        nodes.forEach(function (item) {
-            _this.traverse(item, function (a) {
-                if (a.id == _this.parentId)
-                    a.children[_this.id] = newRawNode;
-            });
-        });
+        nodes.push(newRawNode);
         return nodes;
     };
     return Create;
@@ -867,13 +863,8 @@ var Delete = /** @class */ (function (_super) {
     Delete.prototype.call = function (nodes) {
         var _this = this;
         nodes.forEach(function (item) {
-            _this.traverse(item, function (a) {
-                if (a.id == _this.id) {
-                    _this.traverse(a, function (b) {
-                        b.is_deleted = true;
-                    });
-                }
-            });
+            if (item.id == _this.id || item.way_to_root.indexOf(_this.id) != -1)
+                item.is_deleted = true;
         });
         return nodes;
     };
@@ -891,10 +882,8 @@ var Update = /** @class */ (function (_super) {
     Update.prototype.call = function (nodes) {
         var _this = this;
         nodes.forEach(function (item) {
-            _this.traverse(item, function (a) {
-                if (a.id == _this.id)
-                    a.value = _this.value;
-            });
+            if (item.id == _this.id)
+                item.value = _this.value;
         });
         return nodes;
     };
@@ -1103,7 +1092,7 @@ Object(_angular_platform_browser_dynamic__WEBPACK_IMPORTED_MODULE_1__["platformB
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! D:\challenge\django-crm\crmapp\src\main.ts */"./src/main.ts");
+module.exports = __webpack_require__(/*! D:\QS_Challenge\cached-db\crmapp\src\main.ts */"./src/main.ts");
 
 
 /***/ })

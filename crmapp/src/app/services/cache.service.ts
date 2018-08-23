@@ -17,16 +17,17 @@ export class Cache extends IService {
     super(httpClient);
     
     merge(this._addIdSubject.pipe(
-      switchMap((ids) => {
+      switchMap((ids: Array<any>) => {
         this.loading = true;
-        return this.httpClient.get(`${this.API_URL}nodes/`, {
+        var method = (ids.length == 1 ? 'single' : 'filter');
+        return this.httpClient.get(`${this.API_URL}${method}/`, {
           params: {
             id: ids
           }
         });
       }),
-      map((nodes) => {
-        this._rawNodes = this._rawNodes.concat(nodes);
+      map((nodesOrSingle) => {
+        this._rawNodes = this._rawNodes.concat(nodesOrSingle);
       })
     ), this._changesSubject).subscribe(() => {
       this.loading = false;
@@ -82,7 +83,7 @@ export class Cache extends IService {
     this.loading = true;
     return this.httpClient.post<any>(`${this.API_URL}apply`, {
         params: {
-          changes: this._changes
+          changes: this._changes,
           ids: this._rawNodes.map<any>((item) => { return item.id; })
         }
       }

@@ -21,7 +21,9 @@ from nodes import views as nviews
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', nviews.index, name='nodes-index'),
-    re_path(r'^nodes/(id=\d+)*$', nviews.NodeListAPIView.as_view(), name='node-list'),
+    re_path(r'^single/$', nviews.SingleView.as_view(), name='single-node'),
+    re_path(r'^filter/$', nviews.FilterView.as_view(), name='filter-list'),
+    re_path(r'^nodes/$', nviews.NodeListAPIView.as_view(), name='node-list'),
     path(r'reset/', nviews.reset_view, name='reset-db'),
     re_path(r'^apply', nviews.apply_view, name='apply-changes')
 ]
