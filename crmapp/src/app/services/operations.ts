@@ -56,14 +56,15 @@ export class Create extends Operation {
       children: {},
       value: this.value
     };
-    nodes.forEach((item) => {
+    /*nodes.forEach((item) => {
       this.traverse(item,
         (a) => {
           if (a.id == this.parentId)
             a.children[this.id] = newRawNode;
         }
       );
-    });
+    });*/
+    nodes.push(newRawNode);
     return nodes;
   }
 }
@@ -81,14 +82,16 @@ export class Delete extends Operation {
   }
   
   public call(nodes: Array<any>): Array<any> {
-    nodes.forEach((item) => { 
-      this.traverse(item, (a) => {
+    nodes.forEach((item) => {
+      /*this.traverse(item, (a) => {
         if (a.id == this.id) {
           this.traverse(a, (b) => {
             b.is_deleted = true;
           });
         }
-      });
+      });*/
+      if (item.id == this.id)
+        item.is_deleted = true;
     });
     return nodes;
   }
@@ -114,14 +117,15 @@ export class Update extends Operation {
   
   public call(nodes: Array<any>): Array<any> {
     nodes.forEach((item) => {
-      this.traverse(item,
+      /*this.traverse(item,
         (a) => {
           if (a.id == this.id)
             a.value = this.value;
         }
-      );
+      );*/
+      if (item.id == this.id)
+        item.value = this.value;
     });
     return nodes;
   }
 }
-
