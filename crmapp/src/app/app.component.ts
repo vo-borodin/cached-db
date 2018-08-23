@@ -90,8 +90,9 @@ export class AppComponent implements OnInit  {
   }
   
   resetTree() {
-    this.source.service.resetNodes().toPromise().then(() => {
+    this.source.service.resetNodes().subscribe(() => {
       this.cache.service.clear();
+      this.cache.service.clearChanges();
       this.source.service.readAll();
     });
   }
