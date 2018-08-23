@@ -129,4 +129,3 @@ export class Update extends Operation {
     return nodes;
   }
 }
-
