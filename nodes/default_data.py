@@ -3,6 +3,7 @@ DATA = {'6c3b34f6-423b-4414-ba27-497a231ef168': {'parentId': None, 'value': 'EMR
 
 def default_nodes(apps, schema_editor):
     Node = apps.get_model('nodes', 'Node')
+    Node.nodes.all().delete()
     reset_nodes(Node)
 
 def reset_nodes(cls):
