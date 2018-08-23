@@ -17,11 +17,11 @@ export class Cache extends IService {
     super(httpClient);
     
     merge(this._addIdSubject.pipe(
-      switchMap((id) => {
+      switchMap((ids) => {
         this.loading = true;
         return this.httpClient.get(`${this.API_URL}nodes/`, {
           params: {
-            id: id.toString()
+            id: ids
           }
         });
       }),
@@ -31,7 +31,7 @@ export class Cache extends IService {
     ), this._changesSubject).subscribe(() => {
       this.loading = false;
       var preApplied = this.preApplyChanges();
-      return this.dataChange.next(this.buildData(preApplied));
+      return this.dataChange.next(this.buildData(preApplied.slice()));
     }, (error) => {
       this.loading = false;
     });
@@ -52,7 +52,7 @@ export class Cache extends IService {
   
   public clearChanges() {
     this._changes = [];
-    this._changesSubject.next();
+    return this._changesSubject.next();
   }
   
   public clear() {
@@ -66,7 +66,7 @@ export class Cache extends IService {
   }
 
   public addNode(id: any) {
-    return this._addIdSubject.next(id);
+    return this._addIdSubject.next([id.toString()]);
   }
   
   public addOperation(op: Operation) {
@@ -83,13 +83,13 @@ export class Cache extends IService {
     return this.httpClient.post<any>(`${this.API_URL}apply`, {
         params: {
           changes: this._changes
+          ids: this._rawNodes.map<any>((item) => { return item.id; })
         }
       }
     ).pipe(map((resp) => {
       this.loading = false;
-      this.clear();
-      this.clearChanges();
-      return resp;
+      this._changes = [];
+      return this._addIdSubject.next(resp.ids);
     }), catchError((err, _) => {
       this.loading = false;
       throw err;

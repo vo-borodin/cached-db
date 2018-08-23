@@ -2,11 +2,14 @@ import { Injectable} from '@angular/core';
 import { HttpClient} from  '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Node } from '../models/node.model';
-import 'rxjs/add/operator/map';
+import { map } from 'rxjs/operators/map';
 
 @Injectable()
 export abstract class IService {
-  protected API_URL  = window.location.href;
+  protected API_URL =
+    window.location.href.includes("localhost") ?
+      "http://localhost:8000/" : // FOR DEVELOPMENT
+      window.location.href;
 
   public get data(): Node[] { return this.dataChange.value; }
 
@@ -58,9 +61,11 @@ export abstract class IService {
     this.loading = true;
     return this.httpClient.get(`${this.API_URL}reset/`, {
       responseType: 'text'
-    }).map((resp) => {
-      this.loading = false;
-      return resp;
-    });
+    }).pipe(
+      map((resp) => {
+        this.loading = false;
+        return resp;
+      })
+    );
   }
 }

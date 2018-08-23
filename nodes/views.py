@@ -17,9 +17,9 @@ class NodeListAPIView(generics.ListCreateAPIView):
     #permission_classes = (IsAdminUser,)
     
     def get_queryset(self):
-        if 'id' in self.request.query_params:
-            id = int(self.request.query_params.get('id'))
-            return Node.nodes.filter(id=id)
+        ids = list(map(int, self.request.query_params.getlist('id')))
+        if len(ids):
+            return Node.nodes.filter(id__in=ids)
         else:
             return Node.nodes.all()
 
@@ -33,6 +33,7 @@ def reset_view(request):
 def apply_view(request):
     body = request.body
     operations = json.loads(body)['params']['changes']
+    ids = json.loads(body)['params']['ids']
     
     try:
         with transaction.atomic():
@@ -55,6 +56,7 @@ def apply_view(request):
                         raise Exception('Unable to add child "{0}" to deleted node "{1}". {2}', value, parent.value)
                     node = Node(parent_id=parent, is_deleted=False, value=value)
                     node.save()
+                    ids.append(node.id)
                     replace_uuid_with_real(id, node.id)
                 elif operation['name'] == 'Delete':
                     id = operation['id']
@@ -71,5 +73,5 @@ def apply_view(request):
     except Exception as e:
         return HttpResponseBadRequest(e.args[0].format(e.args[1], e.args[2], "Changes were not applied."))
     
-    return HttpResponse(json.dumps({'result': 'Changes are applied'}))
+    return HttpResponse(json.dumps({'result': 'Changes are applied', 'ids': ids}))
 
