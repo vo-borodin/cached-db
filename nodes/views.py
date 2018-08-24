@@ -66,7 +66,6 @@ def apply_view(request):
                             op['id'] = node.id
                         if op['name'] == 'Update' and 'id' in op and op['id'] == id:
                             op['id'] = node.id
-                        print(op)
                 elif operation['name'] == 'Delete':
                     id = operation['id']
                     node = Node.nodes.get(pk=id)
