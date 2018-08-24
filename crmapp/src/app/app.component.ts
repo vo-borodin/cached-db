@@ -78,7 +78,7 @@ export class AppComponent implements OnInit  {
   }
   
   applyChanges() {
-    this.cache.service.applyChanges().subscribe((resp) => {
+    this.cache.service.applyChangesToBase().subscribe((resp) => {
       this.source.service.readAll();
     }, (err) => {
       this.openShowErrorDialog('Invalid changes', err.error).then(() => {

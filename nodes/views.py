@@ -30,7 +30,7 @@ class SingleNodeView(generics.ListCreateAPIView):
         id = int(self.request.query_params.get('id'))
         cache = list(map(int, self.request.query_params.getlist('cache')))
         node = Node.nodes.get(pk=id)
-        node.way_to_root = json.dumps([w for w in self.get_way_to_root(node) if w in cache])
+        node.way_to_root = ','.join([str(w) for w in self.get_way_to_root(node) if w in cache])
         return [node]
 
 
@@ -43,19 +43,10 @@ def reset_view(request):
 def apply_view(request):
     body = request.body
     operations = json.loads(body)['params']['changes']
-    new_ids = {}
+    ret = operations[:]
     
     try:
         with transaction.atomic():
-            def replace_uuid_with_real(fake, real):
-                for op in operations:
-                    if op['name'] == 'Create' and 'parentId' in op and op['parentId'] == fake:
-                        op['parentId'] = real
-                    if op['name'] == 'Delete' and 'id' in op and op['id'] == fake:
-                        op['id'] = real
-                    if op['name'] == 'Update' and 'id' in op and op['id'] == fake:
-                        op['id'] = real
-            
             for operation in operations:
                 if operation['name'] == 'Create':
                     id = operation['id']
@@ -66,8 +57,16 @@ def apply_view(request):
                         raise Exception('Unable to add child "{0}" to deleted node "{1}". {2}', value, parent.value)
                     node = Node(parent_id=parent, is_deleted=False, value=value)
                     node.save()
-                    new_ids[node.id] = id
-                    replace_uuid_with_real(id, node.id)
+                    for op in ret:
+                        if op['name'] == 'Create' and 'id' in op and op['id'] == id:
+                            op['id'] = node.id
+                        if op['name'] == 'Create' and 'parentId' in op and op['parentId'] == id:
+                            op['parentId'] = node.id
+                        if op['name'] == 'Delete' and 'id' in op and op['id'] == id:
+                            op['id'] = node.id
+                        if op['name'] == 'Update' and 'id' in op and op['id'] == id:
+                            op['id'] = node.id
+                        print(op)
                 elif operation['name'] == 'Delete':
                     id = operation['id']
                     node = Node.nodes.get(pk=id)
@@ -83,5 +82,5 @@ def apply_view(request):
     except Exception as e:
         return HttpResponseBadRequest(e.args[0].format(e.args[1], e.args[2], 'Changes were not applied.'))
     
-    return HttpResponse(json.dumps({'result': 'Changes are applied', 'new_ids': new_ids}))
+    return HttpResponse(json.dumps({'result': 'Changes are applied', 'changes': ret}))
 

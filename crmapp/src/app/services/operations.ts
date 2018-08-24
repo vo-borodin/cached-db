@@ -17,7 +17,7 @@ export class Create extends Operation {
    *    -- keep the relations between
    *    -- existing and new nodes
    */
-  private id: any = null;
+  private id: any;
   /** parentId: Primary key
    *    -- the parent of new node
    */
@@ -27,11 +27,12 @@ export class Create extends Operation {
    */
   private value: string;
   
-  constructor(parentId: any, value: string) {
+  constructor(parentId: any, value: string, id: any=null) {
     super();
     
     this.parentId = parentId;
     this.value = value;
+    this.id = id;
   }
   
   public call(nodes: Array<any>): Array<any> {
@@ -101,3 +102,15 @@ export class Update extends Operation {
     return nodes;
   }
 }
+
+export class OperationFactory {
+  public static get(cfg: Object): Operation {
+    if (cfg['name'] == 'Create')
+      return new Create(cfg['parentId'], cfg['value'], cfg['id']);
+    else if (cfg['name'] == 'Delete')
+      return new Delete(cfg['id']);
+    else
+      return new Update(cfg['id'], cfg['value']);
+  }
+}
+

@@ -1,5 +1,5 @@
 import { IService } from './iservice.service';
-import { Operation } from './operations';
+import { Operation, OperationFactory } from './operations';
 import { HttpClient } from  '@angular/common/http';
 import { Injectable} from '@angular/core';
 import { Subject, of } from 'rxjs';
@@ -32,7 +32,7 @@ export class Cache extends IService {
     ), this._changesSubject).subscribe(() => {
       this.loading = false;
       var preApplied = this.preApplyChanges();
-      return this.dataChange.next(this.buildData(preApplied.slice()));
+      return this.dataChange.next(this.buildData(preApplied));
     }, (error) => {
       this.loading = false;
     });
@@ -51,10 +51,9 @@ export class Cache extends IService {
     }, this._rawNodes.slice());
   }
   
-  private substituteFakeIds(id_dict: Object) {
-    this._rawNodes.forEach((rawNode) => {
-      if (rawNode.id in id_dict)
-        rawNode.id = id_dict[rawNode.id];
+  private updateOperations(infoArray: Array<any>) {
+    this._changes = infoArray.map<Operation>((item) => {
+      return OperationFactory.get(item);
     });
   }
   
@@ -86,7 +85,7 @@ export class Cache extends IService {
     return this._changes.length;
   }
   
-  public applyChanges() {
+  public applyChangesToBase() {
     this.loading = true;
     return this.httpClient.post<any>(`${this.API_URL}apply`, {
         params: {
@@ -95,7 +94,8 @@ export class Cache extends IService {
       }
     ).pipe(map((resp) => {
       this.loading = false;
-      this.substituteFakeIds(resp.new_ids);
+      this.updateOperations(resp.changes);
+      this._rawNodes = this.preApplyChanges();
       return this.clearChanges();
     }), catchError((err, _) => {
       this.loading = false;

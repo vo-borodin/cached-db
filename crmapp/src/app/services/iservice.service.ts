@@ -20,7 +20,7 @@ export abstract class IService {
     var items = {};
     var toRemove = [];
     data.forEach((item) => {
-      items[item.id] = item;
+      items[item.id] = {...item};
     });
     for (var k in items) {
       var parentId = items[k].parent_id;
