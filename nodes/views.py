@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import generics
 from .models import Node
-from .serializers import NodeSerializer
+from .serializers import NodeSerializer, CacheNodeSerializer
 from rest_framework.permissions import IsAdminUser
 from django.http import HttpResponse, HttpResponseBadRequest
 from nodes.default_data import reset_nodes
@@ -13,21 +13,41 @@ def index(request):
     return render(request, 'index.html')
 
 class NodeListAPIView(generics.ListCreateAPIView):
+    queryset = Node.nodes.all()
     serializer_class = NodeSerializer
     #permission_classes = (IsAdminUser,)
+
     
+class BaseView(generics.ListCreateAPIView):
+    serializer_class = CacheNodeSerializer
+    
+    def get_way_to_root(self, node):
+        ancestors = Node.nodes.ancestors(node)
+        return ','.join([str(x.id) for x in ancestors])
+
+
+class FilterView(BaseView):
     def get_queryset(self):
         ids = list(map(int, self.request.query_params.getlist('id')))
-        if len(ids):
-            return Node.nodes.filter(id__in=ids)
-        else:
-            return Node.nodes.all()
+        nodes = Node.nodes.filter(id__in=ids)
+        for node in nodes:
+            way_to_root = Node.nodes.ancestors(node)
+            node.way_to_root = self.get_way_to_root(node)
+        return nodes
 
-            
+
+class SingleView(BaseView):    
+    def get_queryset(self):
+        id = int(self.request.query_params.get('id'))
+        node = Node.nodes.filter(id=id)[0]
+        node.way_to_root = self.get_way_to_root(node)
+        return [node]
+
+
 def reset_view(request):
     Node.nodes.all().delete()
     reset_nodes(Node)
-    return HttpResponse("Database is reset")
+    return HttpResponse('Database is reset')
 
     
 def apply_view(request):
@@ -71,7 +91,7 @@ def apply_view(request):
                     node.value = value
                     node.save()
     except Exception as e:
-        return HttpResponseBadRequest(e.args[0].format(e.args[1], e.args[2], "Changes were not applied."))
+        return HttpResponseBadRequest(e.args[0].format(e.args[1], e.args[2], 'Changes were not applied.'))
     
     return HttpResponse(json.dumps({'result': 'Changes are applied', 'ids': ids}))
 

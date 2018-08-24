@@ -14,12 +14,6 @@ export abstract class Operation {
   }
   
   public abstract call(nodes: Array<any>): Array<any>;
-  
-  protected traverse(item, callback: (i) => void) {
-    callback(item)
-    for (let k in item.children)
-      this.traverse(item.children[k], callback);
-  }
 }
 
 export class Create extends Operation {
@@ -49,21 +43,18 @@ export class Create extends Operation {
   public call(nodes: Array<any>): Array<any> {
     if (!this.id)
       this.id = Guid.raw();
+    var way_to_root = "";
+    nodes.forEach((item) => {
+      if (item.id == this.parentId)
+        way_to_root = item.way_to_root;
+    });
     var newRawNode = {
       id: this.id,
       is_deleted: false,
       parent_id: this.parentId,
-      children: {},
-      value: this.value
+      value: this.value,
+      way_to_root: `${this.id},${way_to_root}`
     };
-    /*nodes.forEach((item) => {
-      this.traverse(item,
-        (a) => {
-          if (a.id == this.parentId)
-            a.children[this.id] = newRawNode;
-        }
-      );
-    });*/
     nodes.push(newRawNode);
     return nodes;
   }
@@ -83,14 +74,7 @@ export class Delete extends Operation {
   
   public call(nodes: Array<any>): Array<any> {
     nodes.forEach((item) => {
-      /*this.traverse(item, (a) => {
-        if (a.id == this.id) {
-          this.traverse(a, (b) => {
-            b.is_deleted = true;
-          });
-        }
-      });*/
-      if (item.id == this.id)
+      if (item.id == this.id || item.way_to_root.indexOf(this.id) != -1)
         item.is_deleted = true;
     });
     return nodes;
@@ -117,12 +101,6 @@ export class Update extends Operation {
   
   public call(nodes: Array<any>): Array<any> {
     nodes.forEach((item) => {
-      /*this.traverse(item,
-        (a) => {
-          if (a.id == this.id)
-            a.value = this.value;
-        }
-      );*/
       if (item.id == this.id)
         item.value = this.value;
     });

@@ -6,10 +6,7 @@ import { map } from 'rxjs/operators/map';
 
 @Injectable()
 export abstract class IService {
-  protected API_URL =
-    window.location.href.includes("localhost") ?
-      "http://localhost:8000/" : // FOR DEVELOPMENT
-      window.location.href;
+  protected API_URL = window.location.href;
 
   public get data(): Node[] { return this.dataChange.value; }
 
@@ -26,16 +23,16 @@ export abstract class IService {
       items[item.id] = item;
     });
     for (var k in items) {
-      var parentId = items[k]["parent_id"];
+      var parentId = items[k].parent_id;
       if (parentId in items) {
-        if ("children" in items[parentId])
-          items[parentId]["children"][k] = items[k];
+        if ('children' in items[parentId])
+          items[parentId].children[k] = items[k];
         else
-          items[parentId]["children"] = {k: items[k]};
+          items[parentId].children = {k: items[k]};
         toRemove.push(k)
       }
-      if (!("children" in items[k]))
-          items[k]["children"] = {};
+      if (!('children' in items[k]))
+          items[k].children = {};
     }
     toRemove.forEach((id) => {
       delete items[id];
@@ -51,7 +48,7 @@ export abstract class IService {
       node.id = item.id;
       node.deleted = item.is_deleted;
       node.value = item.value;
-      node.children = this.buildTree(item["children"]);
+      node.children = this.buildTree(item.children);
       nodes.push(node);
     }
     return nodes;

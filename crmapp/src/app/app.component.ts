@@ -44,7 +44,7 @@ export class AppComponent implements OnInit  {
   }
   
   addCreate() {
-    this.openSetValueDialog("Add New Child of Node", "").then((value) => {
+    this.openSetValueDialog('Add New Child of Node', '').then((value) => {
       if (value && value.trim()) {
         var c = new Create(this.cache.getSelectedNode().id, value);
         this.cache.service.addOperation(c);
@@ -55,9 +55,8 @@ export class AppComponent implements OnInit  {
   
   addDelete() {
     var selectedNode = this.cache.getSelectedNode();
-    var q = "Are you sure you want to delete the node '" +
-      selectedNode.value + "' and all its descendants?"
-    this.openConfirmDialog("Delete Node", q).then((result) => {
+    var q = `Are you sure you want to delete the node "${selectedNode.value}" and all its descendants?`;
+    this.openConfirmDialog('Delete Node', q).then((result) => {
       if (result) {
         var d = new Delete(selectedNode.id);
         this.cache.service.addOperation(d);
@@ -69,7 +68,7 @@ export class AppComponent implements OnInit  {
   addUpdate() {
     var selectedNode = this.cache.getSelectedNode();
     var oldValue = selectedNode.value;
-    this.openSetValueDialog("Edit Node", selectedNode.value).then((value) => {
+    this.openSetValueDialog('Edit Node', selectedNode.value).then((value) => {
       if (value && oldValue != value) {
         var u = new Update(selectedNode.id, value);
         this.cache.service.addOperation(u);
@@ -82,7 +81,7 @@ export class AppComponent implements OnInit  {
     this.cache.service.applyChanges().subscribe((resp) => {
       this.source.service.readAll();
     }, (err) => {
-      this.openShowErrorDialog("Invalid changes", err.error).then(() => {
+      this.openShowErrorDialog('Invalid changes', err.error).then(() => {
         this.cache.service.clear();
         this.cache.service.clearChanges();
       });

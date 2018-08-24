@@ -4,4 +4,10 @@ from .models import Node
 class NodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Node
-        fields = "__all__"
+        exclude = ['way_to_root']
+
+
+class CacheNodeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Node
+        fields = '__all__'
