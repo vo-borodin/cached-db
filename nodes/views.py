@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAdminUser
 from django.http import HttpResponse, HttpResponseBadRequest
 from nodes.default_data import reset_nodes
 from django.db import transaction
+import operator
 import json
 # Create your views here.
 
@@ -17,29 +18,19 @@ class NodeListAPIView(generics.ListCreateAPIView):
     serializer_class = NodeSerializer
     #permission_classes = (IsAdminUser,)
 
-    
-class BaseView(generics.ListCreateAPIView):
+
+class SingleNodeView(generics.ListCreateAPIView):
     serializer_class = CacheNodeSerializer
     
     def get_way_to_root(self, node):
         ancestors = Node.nodes.ancestors(node)
-        return ','.join([str(x.id) for x in ancestors])
+        return [x.id for x in ancestors]
 
-
-class FilterView(BaseView):
-    def get_queryset(self):
-        ids = list(map(int, self.request.query_params.getlist('id')))
-        nodes = Node.nodes.filter(id__in=ids)
-        for node in nodes:
-            node.way_to_root = self.get_way_to_root(node)
-        return nodes
-
-
-class SingleView(BaseView):    
     def get_queryset(self):
         id = int(self.request.query_params.get('id'))
-        node = Node.nodes.filter(id=id)[0]
-        node.way_to_root = self.get_way_to_root(node)
+        cache = list(map(int, self.request.query_params.getlist('cache')))
+        node = Node.nodes.get(pk=id)
+        node.way_to_root = json.dumps([w for w in self.get_way_to_root(node) if w in cache])
         return [node]
 
 
@@ -52,7 +43,7 @@ def reset_view(request):
 def apply_view(request):
     body = request.body
     operations = json.loads(body)['params']['changes']
-    ids = json.loads(body)['params']['ids']
+    new_ids = {}
     
     try:
         with transaction.atomic():
@@ -75,7 +66,7 @@ def apply_view(request):
                         raise Exception('Unable to add child "{0}" to deleted node "{1}". {2}', value, parent.value)
                     node = Node(parent_id=parent, is_deleted=False, value=value)
                     node.save()
-                    ids.append(node.id)
+                    new_ids[node.id] = id
                     replace_uuid_with_real(id, node.id)
                 elif operation['name'] == 'Delete':
                     id = operation['id']
@@ -92,5 +83,5 @@ def apply_view(request):
     except Exception as e:
         return HttpResponseBadRequest(e.args[0].format(e.args[1], e.args[2], 'Changes were not applied.'))
     
-    return HttpResponse(json.dumps({'result': 'Changes are applied', 'ids': ids}))
+    return HttpResponse(json.dumps({'result': 'Changes are applied', 'new_ids': new_ids}))
 

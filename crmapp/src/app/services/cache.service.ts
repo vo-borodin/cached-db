@@ -17,17 +17,17 @@ export class Cache extends IService {
     super(httpClient);
     
     merge(this._addIdSubject.pipe(
-      switchMap((ids: Array<any>) => {
+      switchMap((id: string) => {
         this.loading = true;
-        var method = (ids.length == 1 ? 'single' : 'filter');
-        return this.httpClient.get(`${this.API_URL}${method}/`, {
+        return this.httpClient.get(`${this.API_URL}single/`, {
           params: {
-            id: ids
+            id: id,
+            cache: this._rawNodes.map<any>((item) => { return item.id; })
           }
         });
       }),
-      map((nodesOrSingle) => {
-        this._rawNodes = this._rawNodes.concat(nodesOrSingle);
+      map((node) => {
+        this._rawNodes = this._rawNodes.concat(node);
       })
     ), this._changesSubject).subscribe(() => {
       this.loading = false;
@@ -51,6 +51,13 @@ export class Cache extends IService {
     }, this._rawNodes.slice());
   }
   
+  private substituteFakeIds(id_dict: Object) {
+    this._rawNodes.forEach((rawNode) => {
+      if (rawNode.id in id_dict)
+        rawNode.id = id_dict[rawNode.id];
+    });
+  }
+  
   public clearChanges() {
     this._changes = [];
     return this._changesSubject.next();
@@ -67,7 +74,7 @@ export class Cache extends IService {
   }
 
   public addNode(id: any) {
-    return this._addIdSubject.next([id.toString()]);
+    return this._addIdSubject.next(id.toString());
   }
   
   public addOperation(op: Operation) {
@@ -83,14 +90,13 @@ export class Cache extends IService {
     this.loading = true;
     return this.httpClient.post<any>(`${this.API_URL}apply`, {
         params: {
-          changes: this._changes,
-          ids: this._rawNodes.map<any>((item) => { return item.id; })
+          changes: this._changes
         }
       }
     ).pipe(map((resp) => {
       this.loading = false;
-      this._changes = [];
-      return this._addIdSubject.next(resp.ids);
+      this.substituteFakeIds(resp.new_ids);
+      return this.clearChanges();
     }), catchError((err, _) => {
       this.loading = false;
       throw err;

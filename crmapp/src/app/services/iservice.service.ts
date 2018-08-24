@@ -6,7 +6,7 @@ import { map } from 'rxjs/operators/map';
 
 @Injectable()
 export abstract class IService {
-  protected API_URL = window.location.href;
+  protected API_URL = "http://localhost:8000/" //window.location.href;
 
   public get data(): Node[] { return this.dataChange.value; }
 
