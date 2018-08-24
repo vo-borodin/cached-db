@@ -31,7 +31,6 @@ class FilterView(BaseView):
         ids = list(map(int, self.request.query_params.getlist('id')))
         nodes = Node.nodes.filter(id__in=ids)
         for node in nodes:
-            way_to_root = Node.nodes.ancestors(node)
             node.way_to_root = self.get_way_to_root(node)
         return nodes
 

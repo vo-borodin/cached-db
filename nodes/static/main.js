@@ -803,12 +803,6 @@ var __extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
-var OperationEnum;
-(function (OperationEnum) {
-    OperationEnum[OperationEnum["Create"] = 0] = "Create";
-    OperationEnum[OperationEnum["Delete"] = 1] = "Delete";
-    OperationEnum[OperationEnum["Update"] = 2] = "Update";
-})(OperationEnum || (OperationEnum = {}));
 var Operation = /** @class */ (function () {
     function Operation() {
         this.name = this.constructor.name;
@@ -1092,7 +1086,7 @@ Object(_angular_platform_browser_dynamic__WEBPACK_IMPORTED_MODULE_1__["platformB
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! D:\QS_Challenge\cached-db\crmapp\src\main.ts */"./src/main.ts");
+module.exports = __webpack_require__(/*! D:\challenge\django-crm\crmapp\src\main.ts */"./src/main.ts");
 
 
 /***/ })

@@ -1,11 +1,5 @@
 import { Guid } from "guid-typescript";
 
-enum OperationEnum {
-  Create,
-  Delete,
-  Update
-}
-
 export abstract class Operation {
   protected name: string;
   
