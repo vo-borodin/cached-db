@@ -43,7 +43,6 @@ def reset_view(request):
 def apply_view(request):
     body = request.body
     operations = json.loads(body)['params']['changes']
-    ret = operations[:]
     
     try:
         with transaction.atomic():
@@ -57,7 +56,7 @@ def apply_view(request):
                         raise Exception('Unable to add child "{0}" to deleted node "{1}". {2}', value, parent.value)
                     node = Node(parent_id=parent, is_deleted=False, value=value)
                     node.save()
-                    for op in ret:
+                    for op in operations:
                         if op['name'] == 'Create' and 'id' in op and op['id'] == id:
                             op['id'] = node.id
                         if op['name'] == 'Create' and 'parentId' in op and op['parentId'] == id:
@@ -81,5 +80,5 @@ def apply_view(request):
     except Exception as e:
         return HttpResponseBadRequest(e.args[0].format(e.args[1], e.args[2], 'Changes were not applied.'))
     
-    return HttpResponse(json.dumps({'result': 'Changes are applied', 'changes': ret}))
+    return HttpResponse(json.dumps({'result': 'Changes are applied', 'changes': operations}))
 
