@@ -19,18 +19,26 @@ export class Cache extends IService {
     merge(this._addIdSubject.pipe(
       switchMap((id: string) => {
         this.loading = true;
+        var cache = {};
+        this._rawNodes.forEach((item) => {
+          cache[item.id] = item.way_to_root;
+        });
         return this.httpClient.get(`${this.API_URL}single/`, {
           params: {
             id: id,
-            cache: this._rawNodes.map<any>((item) => { return item.id; })
+            reload: this._reloadCache.toString()
           }
         });
       }),
-      map((node) => {
-        this._rawNodes = this._rawNodes.concat(node);
+      map((nodes) => {
+        this._reloadCache = false;
+        var newRelations = JSON.parse(nodes[0]['way_to_root']);
+        this._rawNodes = this._rawNodes.concat(nodes);
+        this.updateRelations(newRelations);
       })
     ), this._changesSubject).subscribe(() => {
       this.loading = false;
+      console.log(this._rawNodes);
       var preApplied = this.preApplyChanges();
       return this.dataChange.next(this.buildData(preApplied));
     }, (error) => {
@@ -41,6 +49,7 @@ export class Cache extends IService {
   private _addIdSubject = new Subject();
   
   private _rawNodes: Array<any> = [];
+  private _reloadCache: Boolean = true;
   
   private _changes: Array<Operation> = [];
   private _changesSubject = new Subject();
@@ -57,12 +66,24 @@ export class Cache extends IService {
     });
   }
   
+  private updateRelations(newRelations: Object) {
+    this._rawNodes.forEach((rawNode) => {
+      if (rawNode['id'] in newRelations) {
+        if (newRelations[rawNode['id']] != null)
+          rawNode['way_to_root'] = parseInt(newRelations[rawNode['id']]);
+        else
+          rawNode['way_to_root'] = null;
+      }
+    });
+  }
+  
   public clearChanges() {
     this._changes = [];
     return this._changesSubject.next();
   }
   
   public clear() {
+    this._reloadCache = true;
     this._rawNodes = [];
   }
   

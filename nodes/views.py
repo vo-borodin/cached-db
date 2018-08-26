@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAdminUser
 from django.http import HttpResponse, HttpResponseBadRequest
 from nodes.default_data import reset_nodes
 from django.db import transaction
+from django.db.models import Q
 import operator
 import json
 # Create your views here.
@@ -13,24 +14,42 @@ import json
 def index(request):
     return render(request, 'index.html')
 
+
 class NodeListAPIView(generics.ListCreateAPIView):
     queryset = Node.nodes.all()
-    serializer_class = NodeSerializer
+    serializer_class = CacheNodeSerializer # NodeSerializer
     #permission_classes = (IsAdminUser,)
 
 
 class SingleNodeView(generics.ListCreateAPIView):
     serializer_class = CacheNodeSerializer
-    
-    def get_way_to_root(self, node):
-        ancestors = Node.nodes.ancestors(node)
-        return [x.id for x in ancestors]
 
     def get_queryset(self):
         id = int(self.request.query_params.get('id'))
-        cache = list(map(int, self.request.query_params.getlist('cache')))
+        r = self.request.query_params.get('reload')
+        reload = (False if r.lower() == 'false' else True)
+        cache = Node.nodes.filter(Q(way_to_root__isnull=False) | Q(pk=id))
+        
+        if reload:
+            cache.update(way_to_root=None)
+            cache = []
+        
+        new_relations = {}
         node = Node.nodes.get(pk=id)
-        node.way_to_root = ','.join([str(w) for w in self.get_way_to_root(node) if w in cache])
+        node.way_to_root = Node.nodes.ancestor_in_cache(node, ids) or '0'
+        new_relations[node.id] = node.way_to_root
+        node.save()
+        
+        ids = [x.id for x in cache]
+        for c in cache:
+            key = str(c.id)
+            a = Node.nodes.ancestor_in_cache(c, ids) or '0'
+            if c.way_to_root != a:
+                new_relations[c.id] = a
+                c.way_to_root = a
+                c.save()
+        
+        node.way_to_root = json.dumps(new_relations)
         return [node]
 
 
@@ -39,7 +58,7 @@ def reset_view(request):
     reset_nodes(Node)
     return HttpResponse('Database is reset')
 
-    
+
 def apply_view(request):
     body = request.body
     operations = json.loads(body)['params']['changes']
