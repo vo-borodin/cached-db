@@ -1,46 +1,30 @@
 import { Injectable} from '@angular/core';
 import { HttpClient} from  '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { Builder } from './builddata';
 import { Node } from '../models/node.model';
 import { map } from 'rxjs/operators/map';
 
 @Injectable()
-export abstract class IService {
+export abstract class IService extends Builder {
   protected API_URL = "http://localhost:8000/" //window.location.href;
 
   public get data(): Node[] { return this.dataChange.value; }
 
   public dataChange = new BehaviorSubject<Node[]>([]);
 
-  public constructor(protected httpClient: HttpClient) { }
+  public constructor(protected httpClient: HttpClient) {
+    super();
+  }
   
   public loading: boolean = false;
 
-  protected buildData(data: Array<any>) {
-    var items = {};
-    var toRemove = [];
-    data.forEach((item) => {
-      items[item.id] = {...item};
-    });
-    for (var k in items) {
-      var parentId = items[k].parent_id;
-      if (parentId in items) {
-        if ('children' in items[parentId])
-          items[parentId].children[k] = items[k];
-        else
-          items[parentId].children = {k: items[k]};
-        toRemove.push(k)
-      }
-      if (!('children' in items[k]))
-          items[k].children = {};
-    }
-    toRemove.forEach((id) => {
-      delete items[id];
-    })
-    return this.buildTree(items);
+  protected buildTree(data: Array<any>): Node[] {
+    var obj = this.buildData(data);
+    return this._buildTreeImpl(obj);
   }
-
-  protected buildTree(obj: Object): Node[] {
+  
+  private _buildTreeImpl(obj: Object) {
     var nodes = [];
     for (var k in obj) {
       var item = obj[k];
@@ -48,7 +32,7 @@ export abstract class IService {
       node.id = item.id;
       node.deleted = item.is_deleted;
       node.value = item.value;
-      node.children = this.buildTree(item.children);
+      node.children = this._buildTreeImpl(item.children);
       nodes.push(node);
     }
     return nodes;

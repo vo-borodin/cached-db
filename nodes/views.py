@@ -33,6 +33,7 @@ class SingleNodeView(generics.ListCreateAPIView):
         if reload:
             cache.update(way_to_root=None)
             cache = []
+        ids = [x.id for x in cache]
         
         new_relations = {}
         node = Node.nodes.get(pk=id)
@@ -40,7 +41,6 @@ class SingleNodeView(generics.ListCreateAPIView):
         new_relations[node.id] = node.way_to_root
         node.save()
         
-        ids = [x.id for x in cache]
         for c in cache:
             key = str(c.id)
             a = Node.nodes.ancestor_in_cache(c, ids) or '0'
@@ -73,7 +73,7 @@ def apply_view(request):
                     parent = Node.nodes.get(pk=parent_id)
                     if parent.is_deleted:
                         raise Exception('Unable to add child "{0}" to deleted node "{1}". {2}', value, parent.value)
-                    node = Node(parent_id=parent, is_deleted=False, value=value)
+                    node = Node(parent_id=parent, is_deleted=False, value=value, way_to_root=None)
                     node.save()
                     for op in operations:
                         if op['name'] == 'Create' and 'id' in op and op['id'] == id:

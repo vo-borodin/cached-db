@@ -1,9 +1,11 @@
 import { Guid } from "guid-typescript";
+import { Builder } from './builddata';
 
-export abstract class Operation {
+export abstract class Operation extends Builder {
   protected name: string;
   
   constructor() {
+    super();
     this.name = this.constructor.name;
   }
   
@@ -38,17 +40,12 @@ export class Create extends Operation {
   public call(nodes: Array<any>): Array<any> {
     if (!this.id)
       this.id = Guid.raw();
-    var way_to_root = "";
-    nodes.forEach((item) => {
-      if (item.id == this.parentId)
-        way_to_root = item.way_to_root;
-    });
     var newRawNode = {
       id: this.id,
       is_deleted: false,
       parent_id: this.parentId,
       value: this.value,
-      way_to_root: `${this.id},${way_to_root}`
+      way_to_root: 0
     };
     nodes.push(newRawNode);
     return nodes;
@@ -68,10 +65,12 @@ export class Delete extends Operation {
   }
   
   public call(nodes: Array<any>): Array<any> {
-    nodes.forEach((item) => {
+    /*nodes.forEach((item) => {
       if (item.id == this.id || item.way_to_root.indexOf(this.id) != -1)
         item.is_deleted = true;
-    });
+    });*/
+    var obj = this.buildData(nodes);
+    console.log(obj);
     return nodes;
   }
 }

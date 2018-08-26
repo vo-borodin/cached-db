@@ -32,15 +32,14 @@ export class Cache extends IService {
       }),
       map((nodes) => {
         this._reloadCache = false;
-        var newRelations = JSON.parse(nodes[0]['way_to_root']);
         this._rawNodes = this._rawNodes.concat(nodes);
-        this.updateRelations(newRelations);
+        this.updateRelations(JSON.parse(nodes[0]['way_to_root']));
       })
     ), this._changesSubject).subscribe(() => {
       this.loading = false;
       console.log(this._rawNodes);
       var preApplied = this.preApplyChanges();
-      return this.dataChange.next(this.buildData(preApplied));
+      return this.dataChange.next(this.buildTree(preApplied));
     }, (error) => {
       this.loading = false;
     });
