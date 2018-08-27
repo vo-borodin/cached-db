@@ -1,10 +1,10 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material';
+import { DBTreeViewComponent, CachTreeViewComponent } from './treeview/treeview.component';
+import { Create, Delete, Update } from './services/operations';
 import { SetValueDialog } from './dialogs/setvaluedialog.component';
 import { ConfirmDialog } from './dialogs/confirmdialog.component';
 import { ShowErrorDialog } from './dialogs/showerrordialog.component';
-import { Create, Delete, Update } from './services/operations';
-import { DBTreeViewComponent, CachTreeViewComponent } from './treeview/treeview.component';
 
 @Component({
   selector: 'my-app',

@@ -1,13 +1,12 @@
-import { IService } from './iservice.service';
-import { Operation, OperationFactory } from './operations';
-import { HttpClient } from  '@angular/common/http';
 import { Injectable} from '@angular/core';
-import { Subject, of } from 'rxjs';
+import { IService } from './iservice.service';
+import { HttpClient } from  '@angular/common/http';
 import { merge } from 'rxjs/observable/merge';
 import { switchMap } from 'rxjs/operators';
 import { map } from 'rxjs/operators/map';
+import { Subject } from 'rxjs';
+import { Operation, OperationFactory } from './operations';
 import { catchError } from 'rxjs/operators';
-import { Node } from '../models/node.model';
 
 @Injectable({
   providedIn: 'root'
@@ -17,11 +16,11 @@ export class Cache extends IService {
     super(httpClient);
     
     merge(this._addIdSubject.pipe(
-      switchMap((id: string) => {
+      switchMap((id: any) => {
         this.loading = true;
         return this.httpClient.get(`${this.API_URL}single/`, {
           params: {
-            id: id,
+            id: id.toString(),
             reload: this._reloadCache.toString()
           }
         });
@@ -87,7 +86,7 @@ export class Cache extends IService {
   }
 
   public addNode(id: any) {
-    return this._addIdSubject.next(id.toString());
+    return this._addIdSubject.next(id);
   }
   
   public addOperation(op: Operation) {

@@ -1,5 +1,5 @@
-import { Guid } from "guid-typescript";
 import { Builder } from './builddata';
+import { Guid } from "guid-typescript";
 
 export abstract class Operation extends Builder {
   protected name: string;
@@ -13,14 +13,17 @@ export abstract class Operation extends Builder {
 }
 
 export class Create extends Operation {
-  /** id: Guid
+  /** id: Guid / Primary key
    *    -- the temporary identifier
    *    -- for building tree and to
    *    -- keep the relations between
-   *    -- existing and new nodes
+   *    -- existing and new nodes;
+   *    -- after apply the changes
+   *    -- to base id is substituted
+   *    -- by real id from base
    */
   private id: any;
-  /** parentId: Primary key
+  /** parentId: Guid / Primary key
    *    -- the parent of new node
    */
   private parentId: any;
@@ -53,7 +56,7 @@ export class Create extends Operation {
 }
 
 export class Delete extends Operation {
-  /** id: Primary key
+  /** id: Guid / Primary key
    *    -- id of record to delete
    */
   private id: any;
@@ -64,33 +67,36 @@ export class Delete extends Operation {
     this.id = id;
   }
   
-  protected traverse(item, callback: (i) => void) {
-    callback(item)
-    for (let k in item.children)
-      this.traverse(item.children[k], callback);
+  private static traverse(item, callback: (i) => void): void {
+    callback(item);
+    for (const k in item.children)
+      Delete.traverse(item.children[k], callback);
   }
   
   public call(nodes: Object): Object {
     var toRemove = new Set([this.id]);
     var obj = this.build(nodes);
+    
     for (const k in obj) {
       var item = obj[k];
-      this.traverse(item, (a) => {
+      Delete.traverse(item, (a) => {
         if (a.id == this.id) {
-          this.traverse(a, (b) => {
+          Delete.traverse(a, (b) => {
             toRemove.add(b.id);
           });
         }
       });
     }
+    
     for (const k in obj) {
       var item = obj[k];
       if (toRemove.has(item.relation)) {
-        this.traverse(item, (a) => {
+        Delete.traverse(item, (a) => {
           toRemove.add(a.id);
         });
       }
     }
+    
     toRemove.forEach((id) => {
       nodes[id].is_deleted = true;
     });
@@ -99,7 +105,7 @@ export class Delete extends Operation {
 }
 
 export class Update extends Operation {
-  /** id: Primary key
+  /** id: Guid / Primary key
    *    -- id of record to update
    */
   private id: any;

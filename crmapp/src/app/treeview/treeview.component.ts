@@ -1,10 +1,10 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { NestedTreeControl } from '@angular/cdk/tree';
+import { Node } from '../models/node.model';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
 import { IService } from '../services/iservice.service';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Database } from '../services/database.service';
 import { Cache } from '../services/cache.service';
-import { Node } from '../models/node.model';
 
 class TreeViewComponent {
   nestedTreeControl: NestedTreeControl<Node>;
