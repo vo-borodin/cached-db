@@ -45,7 +45,7 @@ export class Create extends Operation {
       is_deleted: false,
       parent_id: this.parentId,
       value: this.value,
-      way_to_root: 0
+      relation: 0
     };
     nodes[this.id] = newRawNode;
     return nodes;
@@ -64,13 +64,36 @@ export class Delete extends Operation {
     this.id = id;
   }
   
+  protected traverse(item, callback: (i) => void) {
+    callback(item)
+    for (let k in item.children)
+      this.traverse(item.children[k], callback);
+  }
+  
   public call(nodes: Object): Object {
-    /*nodes.forEach((item) => {
-      if (item.id == this.id || item.way_to_root.indexOf(this.id) != -1)
-        item.is_deleted = true;
-    });*/
+    var toRemove = new Set([this.id]);
     var obj = this.build(nodes);
-    console.log(obj);
+    for (const k in obj) {
+      var item = obj[k];
+      this.traverse(item, (a) => {
+        if (a.id == this.id) {
+          this.traverse(a, (b) => {
+            toRemove.add(b.id);
+          });
+        }
+      });
+    }
+    for (const k in obj) {
+      var item = obj[k];
+      if (toRemove.has(item.relation)) {
+        this.traverse(item, (a) => {
+          toRemove.add(a.id);
+        });
+      }
+    }
+    toRemove.forEach((id) => {
+      nodes[id].is_deleted = true;
+    });
     return nodes;
   }
 }

@@ -6,7 +6,7 @@ from nodes import default_data
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('nodes', '0004_auto_20180827_0032'),
+        ('nodes', '0005_auto_20180827_1155'),
     ]
 
     operations = [

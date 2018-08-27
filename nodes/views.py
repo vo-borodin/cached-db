@@ -17,7 +17,7 @@ def index(request):
 
 class NodeListAPIView(generics.ListCreateAPIView):
     queryset = Node.nodes.all()
-    serializer_class = CacheNodeSerializer # NodeSerializer
+    serializer_class = NodeSerializer
     #permission_classes = (IsAdminUser,)
 
 
@@ -28,28 +28,28 @@ class SingleNodeView(generics.ListCreateAPIView):
         id = int(self.request.query_params.get('id'))
         r = self.request.query_params.get('reload')
         reload = (False if r.lower() == 'false' else True)
-        cache = Node.nodes.filter(Q(way_to_root__isnull=False) | Q(pk=id))
+        cache = Node.nodes.filter(Q(relation__isnull=False) | Q(pk=id))
         
         if reload:
-            cache.update(way_to_root=None)
+            cache.update(relation=None)
             cache = []
         ids = [x.id for x in cache]
         
         new_relations = {}
         node = Node.nodes.get(pk=id)
-        node.way_to_root = Node.nodes.ancestor_in_cache(node, ids) or '0'
-        new_relations[node.id] = node.way_to_root
+        node.relation = Node.nodes.ancestor_in_cache(node, ids) or 0
+        new_relations[node.id] = node.relation
         node.save()
         
         for c in cache:
             key = str(c.id)
-            a = Node.nodes.ancestor_in_cache(c, ids) or '0'
-            if c.way_to_root != a:
+            a = Node.nodes.ancestor_in_cache(c, ids) or 0
+            if c.relation != a:
                 new_relations[c.id] = a
-                c.way_to_root = a
+                c.relation = a
                 c.save()
         
-        node.way_to_root = json.dumps(new_relations)
+        node.relation_info = json.dumps(new_relations)
         return [node]
 
 
@@ -73,7 +73,7 @@ def apply_view(request):
                     parent = Node.nodes.get(pk=parent_id)
                     if parent.is_deleted:
                         raise Exception('Unable to add child "{0}" to deleted node "{1}". {2}', value, parent.value)
-                    node = Node(parent_id=parent, is_deleted=False, value=value, way_to_root=None)
+                    node = Node(parent_id=parent, is_deleted=False, value=value, relation=None)
                     node.save()
                     for op in operations:
                         if op['name'] == 'Create' and 'id' in op and op['id'] == id:

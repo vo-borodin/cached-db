@@ -8,7 +8,7 @@ def default_nodes(apps, schema_editor):
 
 def reset_nodes(cls):
     for k, v in DATA.items():
-        node = cls.nodes.create(parent_id=None, is_deleted=False, value=v['value'], way_to_root='')
+        node = cls.nodes.create(parent_id=None, is_deleted=False, value=v['value'], relation=None)
         node.save()
         v['pk'] = node.pk
     for k, v in DATA.items():

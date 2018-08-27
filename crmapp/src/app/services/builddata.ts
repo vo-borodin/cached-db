@@ -2,8 +2,7 @@
 export abstract class Builder {
   constructor() { }
   
-  protected build(obj: Object): Object {
-    var items = Object.assign({}, obj);
+  protected build(items: Object): Object {
     var toRemove = [];
     for (const k in items) {
       var parentId = items[k].parent_id;
@@ -19,7 +18,7 @@ export abstract class Builder {
     }
     toRemove.forEach((id) => {
       delete items[id];
-    })
+    });
     return items;
   }
 }

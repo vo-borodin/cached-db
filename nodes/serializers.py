@@ -4,7 +4,7 @@ from .models import Node
 class NodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Node
-        exclude = ['way_to_root']
+        exclude = ['relation', 'relation_info']
 
 
 class CacheNodeSerializer(serializers.ModelSerializer):

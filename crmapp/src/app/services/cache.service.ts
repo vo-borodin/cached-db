@@ -29,7 +29,7 @@ export class Cache extends IService {
       map((nodes) => {
         this._reloadCache = false;
         this._rawNodes[nodes[0]['id']] = nodes[0];
-        this.updateRelations(JSON.parse(nodes[0]['way_to_root']));
+        this.updateRelations(JSON.parse(nodes[0]['relation_info']));
       })
     ), this._changesSubject).subscribe(() => {
       this.loading = false;
@@ -51,7 +51,7 @@ export class Cache extends IService {
   private preApplyChanges(): Object {
     return this._changes.reduce((accum, operation) => {
       return operation.call(accum);
-    }, Object.assign({}, this._rawNodes));
+    }, JSON.parse(JSON.stringify(this._rawNodes)));
   }
   
   private updateOperations(infoArray: Array<any>) {
@@ -65,9 +65,9 @@ export class Cache extends IService {
       var rawNode = this._rawNodes[id];
       if (rawNode['id'] in newRelations) {
         if (newRelations[rawNode['id']] != null)
-          rawNode['way_to_root'] = parseInt(newRelations[rawNode['id']]);
+          rawNode['relation'] = parseInt(newRelations[rawNode['id']]);
         else
-          rawNode['way_to_root'] = null;
+          rawNode['relation'] = null;
       }
     }
   }

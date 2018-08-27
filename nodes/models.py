@@ -34,7 +34,8 @@ class Node(models.Model):
     parent_id = models.ForeignKey('self', on_delete=models.CASCADE, db_index=True, null=True, related_name='children')
     is_deleted = models.BooleanField(default=False)
     value = models.TextField(blank=False)
-    way_to_root = models.TextField(blank=True, null=True)
+    relation = models.IntegerField(db_index=True, null=True)
+    relation_info = models.TextField(blank=True, max_length=127)
     
     nodes = NodeQuerySet.as_manager()
 
