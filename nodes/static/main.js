@@ -136,7 +136,7 @@ var AppComponent = /** @class */ (function () {
     };
     AppComponent.prototype.applyChanges = function () {
         var _this = this;
-        this.cache.service.applyChanges().subscribe(function (resp) {
+        this.cache.service.applyChangesToBase().subscribe(function (resp) {
             _this.source.service.readAll();
         }, function (err) {
             _this.openShowErrorDialog('Invalid changes', err.error).then(function () {
@@ -481,6 +481,45 @@ var Node = /** @class */ (function () {
 
 /***/ }),
 
+/***/ "./src/app/services/builddata.ts":
+/*!***************************************!*\
+  !*** ./src/app/services/builddata.ts ***!
+  \***************************************/
+/*! exports provided: Builder */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Builder", function() { return Builder; });
+var Builder = /** @class */ (function () {
+    function Builder() {
+    }
+    Builder.prototype.build = function (items) {
+        var toRemove = [];
+        for (var k in items) {
+            var parentId = items[k].parent_id;
+            if (parentId in items) {
+                if ('children' in items[parentId])
+                    items[parentId].children[k] = items[k];
+                else
+                    items[parentId].children = { k: items[k] };
+                toRemove.push(k);
+            }
+            if (!('children' in items[k]))
+                items[k].children = {};
+        }
+        toRemove.forEach(function (id) {
+            delete items[id];
+        });
+        return items;
+    };
+    return Builder;
+}());
+
+
+
+/***/ }),
+
 /***/ "./src/app/services/cache.service.ts":
 /*!*******************************************!*\
   !*** ./src/app/services/cache.service.ts ***!
@@ -492,12 +531,13 @@ var Node = /** @class */ (function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Cache", function() { return Cache; });
 /* harmony import */ var _iservice_service__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./iservice.service */ "./src/app/services/iservice.service.ts");
-/* harmony import */ var _angular_common_http__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/common/http */ "./node_modules/@angular/common/fesm5/http.js");
-/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm5/core.js");
-/* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm5/index.js");
-/* harmony import */ var rxjs_observable_merge__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! rxjs/observable/merge */ "./node_modules/rxjs-compat/_esm5/observable/merge.js");
-/* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! rxjs/operators */ "./node_modules/rxjs/_esm5/operators/index.js");
-/* harmony import */ var rxjs_operators_map__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! rxjs/operators/map */ "./node_modules/rxjs-compat/_esm5/operators/map.js");
+/* harmony import */ var _operations__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./operations */ "./src/app/services/operations.ts");
+/* harmony import */ var _angular_common_http__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @angular/common/http */ "./node_modules/@angular/common/fesm5/http.js");
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm5/core.js");
+/* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm5/index.js");
+/* harmony import */ var rxjs_observable_merge__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! rxjs/observable/merge */ "./node_modules/rxjs-compat/_esm5/observable/merge.js");
+/* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! rxjs/operators */ "./node_modules/rxjs/_esm5/operators/index.js");
+/* harmony import */ var rxjs_operators_map__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! rxjs/operators/map */ "./node_modules/rxjs-compat/_esm5/operators/map.js");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -525,29 +565,33 @@ var __metadata = (undefined && undefined.__metadata) || function (k, v) {
 
 
 
+
 var Cache = /** @class */ (function (_super) {
     __extends(Cache, _super);
     function Cache(httpClient) {
         var _this = _super.call(this, httpClient) || this;
         _this.httpClient = httpClient;
-        _this._addIdSubject = new rxjs__WEBPACK_IMPORTED_MODULE_3__["Subject"]();
-        _this._rawNodes = [];
+        _this._addIdSubject = new rxjs__WEBPACK_IMPORTED_MODULE_4__["Subject"]();
+        _this._rawNodes = {};
+        _this._reloadCache = true;
         _this._changes = [];
-        _this._changesSubject = new rxjs__WEBPACK_IMPORTED_MODULE_3__["Subject"]();
-        Object(rxjs_observable_merge__WEBPACK_IMPORTED_MODULE_4__["merge"])(_this._addIdSubject.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["switchMap"])(function (ids) {
+        _this._changesSubject = new rxjs__WEBPACK_IMPORTED_MODULE_4__["Subject"]();
+        Object(rxjs_observable_merge__WEBPACK_IMPORTED_MODULE_5__["merge"])(_this._addIdSubject.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_6__["switchMap"])(function (id) {
             _this.loading = true;
-            var method = (ids.length == 1 ? 'single' : 'filter');
-            return _this.httpClient.get("" + _this.API_URL + method + "/", {
+            return _this.httpClient.get(_this.API_URL + "single/", {
                 params: {
-                    id: ids
+                    id: id,
+                    reload: _this._reloadCache.toString()
                 }
             });
-        }), Object(rxjs_operators_map__WEBPACK_IMPORTED_MODULE_6__["map"])(function (nodesOrSingle) {
-            _this._rawNodes = _this._rawNodes.concat(nodesOrSingle);
+        }), Object(rxjs_operators_map__WEBPACK_IMPORTED_MODULE_7__["map"])(function (nodes) {
+            _this._reloadCache = false;
+            _this._rawNodes[nodes[0]['id']] = nodes[0];
+            _this.updateRelations(JSON.parse(nodes[0]['relation_info']));
         })), _this._changesSubject).subscribe(function () {
             _this.loading = false;
             var preApplied = _this.preApplyChanges();
-            return _this.dataChange.next(_this.buildData(preApplied.slice()));
+            return _this.dataChange.next(_this.buildTree(preApplied));
         }, function (error) {
             _this.loading = false;
         });
@@ -556,22 +600,37 @@ var Cache = /** @class */ (function (_super) {
     Cache.prototype.preApplyChanges = function () {
         return this._changes.reduce(function (accum, operation) {
             return operation.call(accum);
-        }, this._rawNodes.slice());
+        }, JSON.parse(JSON.stringify(this._rawNodes)));
+    };
+    Cache.prototype.updateOperations = function (infoArray) {
+        this._changes = infoArray.map(function (item) {
+            return _operations__WEBPACK_IMPORTED_MODULE_1__["OperationFactory"].get(item);
+        });
+    };
+    Cache.prototype.updateRelations = function (newRelations) {
+        for (var id in this._rawNodes) {
+            var rawNode = this._rawNodes[id];
+            if (rawNode['id'] in newRelations) {
+                if (newRelations[rawNode['id']] != null)
+                    rawNode['relation'] = parseInt(newRelations[rawNode['id']]);
+                else
+                    rawNode['relation'] = null;
+            }
+        }
     };
     Cache.prototype.clearChanges = function () {
         this._changes = [];
         return this._changesSubject.next();
     };
     Cache.prototype.clear = function () {
-        this._rawNodes = [];
+        this._reloadCache = true;
+        this._rawNodes = {};
     };
     Cache.prototype.contains = function (id) {
-        return this._rawNodes.some(function (rawNode) {
-            return rawNode.id == id;
-        });
+        return (id in this._rawNodes);
     };
     Cache.prototype.addNode = function (id) {
-        return this._addIdSubject.next([id.toString()]);
+        return this._addIdSubject.next(id.toString());
     };
     Cache.prototype.addOperation = function (op) {
         this._changes.push(op);
@@ -584,28 +643,28 @@ var Cache = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Cache.prototype.applyChanges = function () {
+    Cache.prototype.applyChangesToBase = function () {
         var _this = this;
         this.loading = true;
         return this.httpClient.post(this.API_URL + "apply", {
             params: {
-                changes: this._changes,
-                ids: this._rawNodes.map(function (item) { return item.id; })
+                changes: this._changes
             }
-        }).pipe(Object(rxjs_operators_map__WEBPACK_IMPORTED_MODULE_6__["map"])(function (resp) {
+        }).pipe(Object(rxjs_operators_map__WEBPACK_IMPORTED_MODULE_7__["map"])(function (resp) {
             _this.loading = false;
-            _this._changes = [];
-            return _this._addIdSubject.next(resp.ids);
-        }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_5__["catchError"])(function (err, _) {
+            _this.updateOperations(resp.changes);
+            _this._rawNodes = _this.preApplyChanges();
+            return _this.clearChanges();
+        }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_6__["catchError"])(function (err, _) {
             _this.loading = false;
             throw err;
         }));
     };
     Cache = __decorate([
-        Object(_angular_core__WEBPACK_IMPORTED_MODULE_2__["Injectable"])({
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_3__["Injectable"])({
             providedIn: 'root'
         }),
-        __metadata("design:paramtypes", [_angular_common_http__WEBPACK_IMPORTED_MODULE_1__["HttpClient"]])
+        __metadata("design:paramtypes", [_angular_common_http__WEBPACK_IMPORTED_MODULE_2__["HttpClient"]])
     ], Cache);
     return Cache;
 }(_iservice_service__WEBPACK_IMPORTED_MODULE_0__["IService"]));
@@ -661,7 +720,9 @@ var Database = /** @class */ (function (_super) {
         this.loading = true;
         return this.httpClient.get(this.API_URL + "nodes/").toPromise().then(function (data) {
             _this.loading = false;
-            return _this.dataChange.next(_this.buildData(data));
+            var obj = {};
+            data.forEach(function (item) { obj[item['id']] = item; });
+            return _this.dataChange.next(_this.buildTree(obj));
         }, function (error) {
             _this.loading = false;
         });
@@ -692,8 +753,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm5/core.js");
 /* harmony import */ var _angular_common_http__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/common/http */ "./node_modules/@angular/common/fesm5/http.js");
 /* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm5/index.js");
-/* harmony import */ var _models_node_model__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../models/node.model */ "./src/app/models/node.model.ts");
-/* harmony import */ var rxjs_operators_map__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! rxjs/operators/map */ "./node_modules/rxjs-compat/_esm5/operators/map.js");
+/* harmony import */ var _builddata__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./builddata */ "./src/app/services/builddata.ts");
+/* harmony import */ var _models_node_model__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../models/node.model */ "./src/app/models/node.model.ts");
+/* harmony import */ var rxjs_operators_map__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! rxjs/operators/map */ "./node_modules/rxjs-compat/_esm5/operators/map.js");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -708,50 +780,34 @@ var __metadata = (undefined && undefined.__metadata) || function (k, v) {
 
 
 
-var IService = /** @class */ (function () {
+
+var IService = /** @class */ (function (_super) {
+    __extends(IService, _super);
     function IService(httpClient) {
-        this.httpClient = httpClient;
-        this.API_URL = window.location.href;
-        this.dataChange = new rxjs__WEBPACK_IMPORTED_MODULE_2__["BehaviorSubject"]([]);
-        this.loading = false;
+        var _this = _super.call(this) || this;
+        _this.httpClient = httpClient;
+        _this.API_URL = window.location.href;
+        _this.dataChange = new rxjs__WEBPACK_IMPORTED_MODULE_2__["BehaviorSubject"]([]);
+        _this.loading = false;
+        return _this;
     }
     Object.defineProperty(IService.prototype, "data", {
         get: function () { return this.dataChange.value; },
         enumerable: true,
         configurable: true
     });
-    IService.prototype.buildData = function (data) {
-        var items = {};
-        var toRemove = [];
-        data.forEach(function (item) {
-            items[item.id] = item;
-        });
-        for (var k in items) {
-            var parentId = items[k].parent_id;
-            if (parentId in items) {
-                if ('children' in items[parentId])
-                    items[parentId].children[k] = items[k];
-                else
-                    items[parentId].children = { k: items[k] };
-                toRemove.push(k);
-            }
-            if (!('children' in items[k]))
-                items[k].children = {};
-        }
-        toRemove.forEach(function (id) {
-            delete items[id];
-        });
-        return this.buildTree(items);
-    };
     IService.prototype.buildTree = function (obj) {
+        return this._buildTreeImpl(this.build(obj));
+    };
+    IService.prototype._buildTreeImpl = function (obj) {
         var nodes = [];
         for (var k in obj) {
             var item = obj[k];
-            var node = new _models_node_model__WEBPACK_IMPORTED_MODULE_3__["Node"]();
+            var node = new _models_node_model__WEBPACK_IMPORTED_MODULE_4__["Node"]();
             node.id = item.id;
             node.deleted = item.is_deleted;
             node.value = item.value;
-            node.children = this.buildTree(item.children);
+            node.children = this._buildTreeImpl(item.children);
             nodes.push(node);
         }
         return nodes;
@@ -761,7 +817,7 @@ var IService = /** @class */ (function () {
         this.loading = true;
         return this.httpClient.get(this.API_URL + "reset/", {
             responseType: 'text'
-        }).pipe(Object(rxjs_operators_map__WEBPACK_IMPORTED_MODULE_4__["map"])(function (resp) {
+        }).pipe(Object(rxjs_operators_map__WEBPACK_IMPORTED_MODULE_5__["map"])(function (resp) {
             _this.loading = false;
             return resp;
         }));
@@ -771,7 +827,7 @@ var IService = /** @class */ (function () {
         __metadata("design:paramtypes", [_angular_common_http__WEBPACK_IMPORTED_MODULE_1__["HttpClient"]])
     ], IService);
     return IService;
-}());
+}(_builddata__WEBPACK_IMPORTED_MODULE_3__["Builder"]));
 
 
 
@@ -781,7 +837,7 @@ var IService = /** @class */ (function () {
 /*!****************************************!*\
   !*** ./src/app/services/operations.ts ***!
   \****************************************/
-/*! exports provided: Operation, Create, Delete, Update */
+/*! exports provided: Operation, Create, Delete, Update, OperationFactory */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -790,8 +846,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Create", function() { return Create; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Delete", function() { return Delete; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Update", function() { return Update; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "OperationFactory", function() { return OperationFactory; });
 /* harmony import */ var guid_typescript__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! guid-typescript */ "./node_modules/guid-typescript/dist/guid.js");
 /* harmony import */ var guid_typescript__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(guid_typescript__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _builddata__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./builddata */ "./src/app/services/builddata.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -803,45 +861,38 @@ var __extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
-var Operation = /** @class */ (function () {
+
+var Operation = /** @class */ (function (_super) {
+    __extends(Operation, _super);
     function Operation() {
-        this.name = this.constructor.name;
+        var _this = _super.call(this) || this;
+        _this.name = _this.constructor.name;
+        return _this;
     }
     return Operation;
-}());
+}(_builddata__WEBPACK_IMPORTED_MODULE_1__["Builder"]));
 
 var Create = /** @class */ (function (_super) {
     __extends(Create, _super);
-    function Create(parentId, value) {
+    function Create(parentId, value, id) {
+        if (id === void 0) { id = null; }
         var _this = _super.call(this) || this;
-        /** id: Guid
-         *    -- the temporary identifier
-         *    -- for building tree and to
-         *    -- keep the relations between
-         *    -- existing and new nodes
-         */
-        _this.id = null;
         _this.parentId = parentId;
         _this.value = value;
+        _this.id = id;
         return _this;
     }
     Create.prototype.call = function (nodes) {
-        var _this = this;
         if (!this.id)
             this.id = guid_typescript__WEBPACK_IMPORTED_MODULE_0__["Guid"].raw();
-        var way_to_root = "";
-        nodes.forEach(function (item) {
-            if (item.id == _this.parentId)
-                way_to_root = item.way_to_root;
-        });
         var newRawNode = {
             id: this.id,
             is_deleted: false,
             parent_id: this.parentId,
             value: this.value,
-            way_to_root: this.id + "," + way_to_root
+            relation: 0
         };
-        nodes.push(newRawNode);
+        nodes[this.id] = newRawNode;
         return nodes;
     };
     return Create;
@@ -854,11 +905,35 @@ var Delete = /** @class */ (function (_super) {
         _this.id = id;
         return _this;
     }
+    Delete.prototype.traverse = function (item, callback) {
+        callback(item);
+        for (var k in item.children)
+            this.traverse(item.children[k], callback);
+    };
     Delete.prototype.call = function (nodes) {
         var _this = this;
-        nodes.forEach(function (item) {
-            if (item.id == _this.id || item.way_to_root.indexOf(_this.id) != -1)
-                item.is_deleted = true;
+        var toRemove = new Set([this.id]);
+        var obj = this.build(nodes);
+        for (var k in obj) {
+            var item = obj[k];
+            this.traverse(item, function (a) {
+                if (a.id == _this.id) {
+                    _this.traverse(a, function (b) {
+                        toRemove.add(b.id);
+                    });
+                }
+            });
+        }
+        for (var k in obj) {
+            var item = obj[k];
+            if (toRemove.has(item.relation)) {
+                this.traverse(item, function (a) {
+                    toRemove.add(a.id);
+                });
+            }
+        }
+        toRemove.forEach(function (id) {
+            nodes[id].is_deleted = true;
         });
         return nodes;
     };
@@ -874,15 +949,25 @@ var Update = /** @class */ (function (_super) {
         return _this;
     }
     Update.prototype.call = function (nodes) {
-        var _this = this;
-        nodes.forEach(function (item) {
-            if (item.id == _this.id)
-                item.value = _this.value;
-        });
+        nodes[this.id].value = this.value;
         return nodes;
     };
     return Update;
 }(Operation));
+
+var OperationFactory = /** @class */ (function () {
+    function OperationFactory() {
+    }
+    OperationFactory.get = function (cfg) {
+        if (cfg['name'] == 'Create')
+            return new Create(cfg['parentId'], cfg['value'], cfg['id']);
+        else if (cfg['name'] == 'Delete')
+            return new Delete(cfg['id']);
+        else
+            return new Update(cfg['id'], cfg['value']);
+    };
+    return OperationFactory;
+}());
 
 
 
