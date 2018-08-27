@@ -15,7 +15,9 @@ export class Database extends IService {
     this.loading = true;
     return this.httpClient.get(`${this.API_URL}nodes/`).toPromise().then((data: Array<any>) => {
       this.loading = false;
-      return this.dataChange.next(this.buildTree(data));
+      var obj = {}
+      data.forEach((item) => { obj[item['id']] = item; });
+      return this.dataChange.next(this.buildTree(obj));
     }, (error) => {
       this.loading = false;
     });

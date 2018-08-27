@@ -9,7 +9,7 @@ export abstract class Operation extends Builder {
     this.name = this.constructor.name;
   }
   
-  public abstract call(nodes: Array<any>): Array<any>;
+  public abstract call(nodes: Object): Object;
 }
 
 export class Create extends Operation {
@@ -37,7 +37,7 @@ export class Create extends Operation {
     this.id = id;
   }
   
-  public call(nodes: Array<any>): Array<any> {
+  public call(nodes: Object): Object {
     if (!this.id)
       this.id = Guid.raw();
     var newRawNode = {
@@ -47,7 +47,7 @@ export class Create extends Operation {
       value: this.value,
       way_to_root: 0
     };
-    nodes.push(newRawNode);
+    nodes[this.id] = newRawNode;
     return nodes;
   }
 }
@@ -64,12 +64,12 @@ export class Delete extends Operation {
     this.id = id;
   }
   
-  public call(nodes: Array<any>): Array<any> {
+  public call(nodes: Object): Object {
     /*nodes.forEach((item) => {
       if (item.id == this.id || item.way_to_root.indexOf(this.id) != -1)
         item.is_deleted = true;
     });*/
-    var obj = this.buildData(nodes);
+    var obj = this.build(nodes);
     console.log(obj);
     return nodes;
   }
@@ -93,11 +93,8 @@ export class Update extends Operation {
     this.value = value;
   }
   
-  public call(nodes: Array<any>): Array<any> {
-    nodes.forEach((item) => {
-      if (item.id == this.id)
-        item.value = this.value;
-    });
+  public call(nodes: Object): Object {
+    nodes[this.id].value = this.value;
     return nodes;
   }
 }

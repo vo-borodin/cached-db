@@ -19,10 +19,6 @@ export class Cache extends IService {
     merge(this._addIdSubject.pipe(
       switchMap((id: string) => {
         this.loading = true;
-        var cache = {};
-        this._rawNodes.forEach((item) => {
-          cache[item.id] = item.way_to_root;
-        });
         return this.httpClient.get(`${this.API_URL}single/`, {
           params: {
             id: id,
@@ -32,12 +28,11 @@ export class Cache extends IService {
       }),
       map((nodes) => {
         this._reloadCache = false;
-        this._rawNodes = this._rawNodes.concat(nodes);
+        this._rawNodes[nodes[0]['id']] = nodes[0];
         this.updateRelations(JSON.parse(nodes[0]['way_to_root']));
       })
     ), this._changesSubject).subscribe(() => {
       this.loading = false;
-      console.log(this._rawNodes);
       var preApplied = this.preApplyChanges();
       return this.dataChange.next(this.buildTree(preApplied));
     }, (error) => {
@@ -47,16 +42,16 @@ export class Cache extends IService {
   
   private _addIdSubject = new Subject();
   
-  private _rawNodes: Array<any> = [];
+  private _rawNodes: Object = {};
   private _reloadCache: Boolean = true;
   
   private _changes: Array<Operation> = [];
   private _changesSubject = new Subject();
   
-  private preApplyChanges(): Array<any> {
+  private preApplyChanges(): Object {
     return this._changes.reduce((accum, operation) => {
       return operation.call(accum);
-    }, this._rawNodes.slice());
+    }, Object.assign({}, this._rawNodes));
   }
   
   private updateOperations(infoArray: Array<any>) {
@@ -66,14 +61,15 @@ export class Cache extends IService {
   }
   
   private updateRelations(newRelations: Object) {
-    this._rawNodes.forEach((rawNode) => {
+    for (const id in this._rawNodes) {
+      var rawNode = this._rawNodes[id];
       if (rawNode['id'] in newRelations) {
         if (newRelations[rawNode['id']] != null)
           rawNode['way_to_root'] = parseInt(newRelations[rawNode['id']]);
         else
           rawNode['way_to_root'] = null;
       }
-    });
+    }
   }
   
   public clearChanges() {
@@ -83,13 +79,11 @@ export class Cache extends IService {
   
   public clear() {
     this._reloadCache = true;
-    this._rawNodes = [];
+    this._rawNodes = {};
   }
   
   public contains(id: any): Boolean {
-    return this._rawNodes.some((rawNode) => {
-      return rawNode.id == id;
-    });
+    return (id in this._rawNodes);
   }
 
   public addNode(id: any) {

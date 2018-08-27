@@ -19,14 +19,13 @@ export abstract class IService extends Builder {
   
   public loading: boolean = false;
 
-  protected buildTree(data: Array<any>): Node[] {
-    var obj = this.buildData(data);
-    return this._buildTreeImpl(obj);
+  protected buildTree(obj: Object): Node[] {
+    return this._buildTreeImpl(this.build(obj));
   }
   
   private _buildTreeImpl(obj: Object) {
     var nodes = [];
-    for (var k in obj) {
+    for (const k in obj) {
       var item = obj[k];
       var node = new Node();
       node.id = item.id;
