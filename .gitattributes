@@ -1,1 +1,1 @@
-*.js linguist-generated=true
+nodes/static/ linguist-detectable=false
