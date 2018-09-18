@@ -1,1 +1,13 @@
-nodes/static/ linguist-vendored
+nodes/static/main.js linguist-vendored
+nodes/static/main.js.map linguist-vendored
+nodes/static/polyfills.js linguist-vendored
+nodes/static/polyfills.js.map linguist-vendored
+nodes/static/runtime.js linguist-vendored
+nodes/static/runtime.js.map linguist-vendored
+nodes/static/styles.js linguist-vendored
+nodes/static/styles.js.map linguist-vendored
+nodes/static/vendor.js linguist-vendored
+nodes/static/vendor.js.map linguist-vendored
+
+crmapp/e2e/protractor.conf.js linguist-vendored
+crmapp/src/karma.conf.js linguist-vendored
