@@ -9,5 +9,7 @@ nodes/static/styles.js.map linguist-vendored
 nodes/static/vendor.js linguist-vendored
 nodes/static/vendor.js.map linguist-vendored
 
+nodes/templates/index.html linguist-vendored
+
 crmapp/e2e/protractor.conf.js linguist-vendored
 crmapp/src/karma.conf.js linguist-vendored
